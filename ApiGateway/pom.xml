@@ -160,6 +160,16 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/config/**</exclude>
+                                <exclude>**/configuration/**</exclude>
+                                <exclude>**/*Config.class</exclude>
+                                <exclude>**/*Configuration.class</exclude>
+                                <exclude>**/Application.class</exclude>
+                                <exclude>**/Application*.class</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
 
                     <!-- opcjonalnie: fail build jeśli pokrycie za niskie -->
@@ -182,6 +192,14 @@
                                     </limits>
                                 </rule>
                             </rules>
+                            <excludes>
+                                <exclude>**/config/**</exclude>
+                                <exclude>**/configuration/**</exclude>
+                                <exclude>**/*Config.class</exclude>
+                                <exclude>**/*Configuration.class</exclude>
+                                <exclude>**/Application.class</exclude>
+                                <exclude>**/Application*.class</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                     -->
