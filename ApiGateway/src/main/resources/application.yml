@@ -3,7 +3,11 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://auth.example.com/realms/my-realm
   cloud:
     gateway:
       metrics:
@@ -97,8 +101,7 @@ logging:
 cors:
   allowed-origins: "http://localhost:3000"
   allowed-methods: "GET,POST,PUT,DELETE"
-  allowed-headers: "*"
-
+  allowed-headers: "Content-Type,Authorization"
 otel:
   service:
     name: api-gateway
@@ -112,6 +115,6 @@ scrape_configs:
   - job_name: 'api-gateway'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: [ 'host.docker.internal:8080' ]
 
 
