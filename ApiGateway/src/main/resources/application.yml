@@ -1,6 +1,23 @@
 spring:
   cloud:
     gateway:
+      default-filters:
+        # propagacja correlationId
+        - AddRequestHeader=X-Correlation-ID, "#{T(java.util.UUID).randomUUID().toString()}"
+        # security headers
+        - AddResponseHeader=X-Frame-Options, DENY
+        - AddResponseHeader=X-Content-Type-Options, nosniff
+        - AddResponseHeader=Referrer-Policy, no-referrer
+        - AddResponseHeader=X-XSS-Protection, "1; mode=block"
+
+      httpclient:
+        connect-timeout: 3000
+        response-timeout: 5s
+        pool:
+          type: fixed
+          max-connections: 200
+          acquire-timeout: 1000
+
       routes:
         - id: cars_route
           uri: http://cars-service
@@ -11,6 +28,25 @@ spring:
               args:
                 rateLimiter: "#{@redisRateLimiter}"
                 keyResolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: carsServiceCircuitBreaker
+                fallbackUri: forward:/fallback/cars
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, INTERNAL_SERVER_ERROR
+                methods: GET
+
+server:
+  max-http-header-size: 16KB
+  shutdown: graceful
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
 resilience4j:
   circuitbreaker:
@@ -19,3 +55,39 @@ resilience4j:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+  retry:
+    instances:
+      carsRetry:
+        maxAttempts: 3
+        waitDuration: 200ms
+        retryExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.io.IOException
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus, refresh
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty.http.client: WARN
+
+cors:
+  allowed-origins: "http \
+  
+  
+  
+  ://localhost:3000"
+  allowed-methods: "GET,POST,PUT,DELETE"
+  allowed-headers: "*"
+
