@@ -1,3 +1,5 @@
+package unit;
+
 import domain.events.ApiGatewayEventPublisher;
 import infrastructure.filters.CorrelationIdFilter;
 import infrastructure.filters.LoggingFilter;
@@ -10,6 +12,7 @@ import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -85,7 +88,6 @@ public class LoggingFilterTest {
     }
 
 
-
     @Test
     void shouldGenerateCorrelationIdWhenMissing() {
         // given
@@ -105,11 +107,33 @@ public class LoggingFilterTest {
                 .principal(Mono.just(auth))
                 .build();
 
-        new CorrelationIdFilter().filter(exchange, filterChain).block();
+        // osobny WebFilterChain dla CorrelationIdFilter
+        WebFilterChain correlationChain = ex -> Mono.empty();
+
+        // uruchamiamy CorrelationIdFilter
+        new CorrelationIdFilter().filter(exchange, correlationChain).block();
+
+        // ODCZYT correlationId z response headers
+        String generatedCorrelationId = exchange.getResponse()
+                .getHeaders()
+                .getFirst("X-Correlation-ID");
+
+        // LoggingFilter pobiera correlationId z REQUEST headers → musimy je tam wstrzyknąć
+        ServerWebExchange exchangeWithHeader = MockServerWebExchange
+                .from(
+                        MockServerHttpRequest
+                                .get("/bff/dashboard")
+                                .header("X-Correlation-ID", generatedCorrelationId)
+                                .build()
+                )
+                .mutate()
+                .principal(Mono.just(auth))
+                .build();
+
         ArgumentCaptor<String> correlationCaptor = ArgumentCaptor.forClass(String.class);
 
         // when
-        Mono<Void> result = loggingFilter.filter(exchange, filterChain);
+        Mono<Void> result = loggingFilter.filter(exchangeWithHeader, filterChain);
 
         // then
         StepVerifier.create(result).verifyComplete();
@@ -121,9 +145,10 @@ public class LoggingFilterTest {
                 correlationCaptor.capture()
         );
 
-        String generatedCorrelationId = correlationCaptor.getValue();
-        assert generatedCorrelationId != null && !generatedCorrelationId.isBlank();
+        assert correlationCaptor.getValue() != null && !correlationCaptor.getValue().isBlank();
     }
+
+
 
     @Test
     void shouldPropagateErrorWhenEventPublisherFails() {
