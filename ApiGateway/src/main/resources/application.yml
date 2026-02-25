@@ -1,3 +1,17 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: cars_route
+          uri: http://cars-service
+          predicates:
+            - Path=/cars/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rateLimiter: "#{@redisRateLimiter}"
+                keyResolver: "#{@userKeyResolver}"
+
 resilience4j:
   circuitbreaker:
     instances:
