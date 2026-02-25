@@ -6,6 +6,8 @@ spring:
 
   cloud:
     gateway:
+      metrics:
+        enabled: true
       default-filters:
         # Bezpieczeństwo – nagłówki ochronne
         - AddResponseHeader=X-Frame-Options, DENY
@@ -52,6 +54,8 @@ server:
   shutdown: graceful
 
 resilience4j:
+  metrics:
+    enabled: true
   circuitbreaker:
     instances:
       carsServiceCircuitBreaker:
@@ -80,7 +84,9 @@ management:
   endpoint:
     health:
       show-details: always
-
+  metrics:
+    tags:
+      application: api-gateway
 logging:
   pattern:
     level: "%5p [traceId=%X{trace_id} spanId=%X{span_id}]"
@@ -101,4 +107,11 @@ otel:
       endpoint: http://localhost:4317
   traces:
     sampler: parentbased_always_on
+
+scrape_configs:
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+
 
