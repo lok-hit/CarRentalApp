@@ -5,30 +5,29 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
 @Component
-public class CorrelationIdFilter implements GlobalFilter {
-
-    public static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
+public class CorrelationIdFilter implements WebFilter {
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
-        String correlationId = exchange.getRequest().getHeaders()
-                .getFirst(CORRELATION_ID_HEADER);
+        String correlationId = exchange.getRequest().getHeaders().getFirst("X-Correlation-ID");
 
         if (correlationId == null) {
-            correlationId = UUID.randomUUID().toString();
+            correlationId = java.util.UUID.randomUUID().toString();
         }
 
-        ServerHttpRequest mutated = exchange.getRequest()
-                .mutate()
-                .header(CORRELATION_ID_HEADER, correlationId)
-                .build();
+        exchange.getResponse().getHeaders().add("X-Correlation-ID", correlationId);
 
-        return chain.filter(exchange.mutate().request(mutated).build());
+        String finalCorrelationId = correlationId;
+
+        return chain.filter(exchange)
+                .contextWrite(ctx -> ctx.put("correlationId", finalCorrelationId));
     }
 }

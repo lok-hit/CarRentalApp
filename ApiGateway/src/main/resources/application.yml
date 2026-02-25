@@ -19,7 +19,7 @@ spring:
         - AddResponseHeader=Referrer-Policy, no-referrer
         - AddResponseHeader=X-XSS-Protection, "1; mode=block"
         - AddRequestHeader=traceparent, "#{T(io.opentelemetry.api.trace.Span).current().getSpanContext().getTraceId()}"
-
+        - AddRequestHeader=X-Correlation-ID, "#{@correlationIdResolver.resolve()}"
       httpclient:
         connect-timeout: 3000
         response-timeout: 5s
