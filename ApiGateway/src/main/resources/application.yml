@@ -1,123 +1,76 @@
+server:
+  port: 8080
+
 spring:
-  servlet:
-    multipart:
-      max-file-size: 5MB
-      max-request-size: 5MB
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://auth.example.com/realms/my-realm
+  application:
+    name: api-gateway
+
   cloud:
     gateway:
-      metrics:
-        enabled: true
       default-filters:
-        # Bezpieczeństwo – nagłówki ochronne
-        - AddResponseHeader=X-Frame-Options, DENY
-        - AddResponseHeader=X-Content-Type-Options, nosniff
-        - AddResponseHeader=Referrer-Policy, no-referrer
-        - AddResponseHeader=X-XSS-Protection, "1; mode=block"
-        - AddRequestHeader=traceparent, "#{T(io.opentelemetry.api.trace.Span).current().getSpanContext().getTraceId()}"
-        - AddRequestHeader=X-Correlation-ID, "#{@correlationIdResolver.resolve()}"
+        - RemoveHopByHopHeaders
+        - PreserveHostHeader
       httpclient:
         connect-timeout: 3000
         response-timeout: 5s
         pool:
           type: fixed
           max-connections: 200
-          acquire-timeout: 1000
-
-      routes:
-        - id: cars_route
-          uri: http://cars-service
-          predicates:
-            - Path=/cars/**
-          filters:
-            # Rate limiting (dynamiczny, ale placeholder zostaje)
-            - name: RequestRateLimiter
-              args:
-                rateLimiter: "#{@redisRateLimiter}"
-                keyResolver: "#{@userKeyResolver}"
-
-            # Circuit Breaker
-            - name: CircuitBreaker
-              args:
-                name: carsServiceCircuitBreaker
-                fallbackUri: forward:/fallback/cars
-
-            # Retry tylko dla GET i błędów 5xx
-            - name: Retry
-              args:
-                retries: 3
-                methods: GET
-                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, INTERNAL_SERVER_ERROR
-
-server:
-  max-http-header-size: 16KB
-  shutdown: graceful
-
-resilience4j:
-  metrics:
-    enabled: true
-  circuitbreaker:
-    instances:
-      carsServiceCircuitBreaker:
-        slidingWindowSize: 10
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-        permittedNumberOfCallsInHalfOpenState: 3
-        minimumNumberOfCalls: 5
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-
-  retry:
-    instances:
-      carsRetry:
-        maxAttempts: 3
-        waitDuration: 200ms
-        retryExceptions:
-          - org.springframework.web.client.HttpServerErrorException
-          - java.io.IOException
-          - reactor.netty.http.client.PrematureCloseException
+          acquire-timeout: 500ms
 
 management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, prometheus, refresh
+        include: health, info, metrics, prometheus, loggers
+
   endpoint:
     health:
+      probes:
+        enabled: true
       show-details: always
+
   metrics:
-    tags:
-      application: api-gateway
+    enable:
+      jvm: true
+      process: true
+      system: true
+      http: true
+      webclient: true
+      gateway: true
+
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+  otlp:
+    tracing:
+      endpoint: http://otel-collector:4317
+    metrics:
+      export:
+        enabled: true
+        endpoint: http://otel-collector:4317
+
 logging:
-  pattern:
-    level: "%5p [traceId=%X{trace_id} spanId=%X{span_id}]"
   level:
+    root: INFO
     org.springframework.cloud.gateway: INFO
-    reactor.netty.http.client: WARN
+    reactor.netty.http.client: INFO
+    io.micrometer: INFO
+    infrastructure.filters: DEBUG
 
-cors:
-  allowed-origins: "http://localhost:3000"
-  allowed-methods: "GET,POST,PUT,DELETE"
-  allowed-headers: "Content-Type,Authorization"
-otel:
-  service:
+  pattern:
+    level: "%5p [traceId=%X{traceId:-}] [spanId=%X{spanId:-}] [corrId=%X{correlationId:-}]"
+
+info:
+  app:
     name: api-gateway
-  exporter:
-    otlp:
-      endpoint: http://localhost:4317
-  traces:
-    sampler: parentbased_always_on
+    version: 1.0.0
+    description: API Gateway for microservices platform
+  build:
+    timestamp: "@timestamp@"
 
-scrape_configs:
-  - job_name: 'api-gateway'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: [ 'host.docker.internal:8080' ]
-
-
-monitoring:
-  service:
-    url: http://monitoring-service
+gateway:
+  monitoring-service:
+    url: http://monitoring-service:8085/audit
