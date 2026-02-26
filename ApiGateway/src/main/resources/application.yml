@@ -7,9 +7,15 @@ spring:
 
   cloud:
     gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
       default-filters:
         - RemoveHopByHopHeaders
         - PreserveHostHeader
+
       httpclient:
         connect-timeout: 3000
         response-timeout: 5s
@@ -17,6 +23,47 @@ spring:
           type: fixed
           max-connections: 200
           acquire-timeout: 500ms
+
+      routes:
+        # Example: reservations service with circuit breaker + rate limiting
+        - id: reservations-service
+          uri: lb://reservations-service
+          predicates:
+            - Path=/api/reservations/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: reservationsCB
+                fallbackUri: forward:/fallback/reservations
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
+
+        # Example: canary deployment for cars-service (v1 vs v2)
+        - id: cars-service-v1
+          uri: lb://cars-service-v1
+          predicates:
+            - Path=/api/cars/**
+          filters:
+            - Weight=group-cars, 90
+
+        - id: cars-service-v2
+          uri: lb://cars-service-v2
+          predicates:
+            - Path=/api/cars/**
+          filters:
+            - Weight=group-cars, 10
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
 
 management:
   endpoints:
@@ -74,3 +121,17 @@ info:
 gateway:
   monitoring-service:
     url: http://monitoring-service:8085/audit
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      reservationsCB:
+        slidingWindowSize: 20
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+
+spring:
+  redis:
+    host: redis
+    port: 6379
