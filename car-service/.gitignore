@@ -1,0 +1,94 @@
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# IntelliJ cache
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+
+# IntelliJ generated files
+out/
+
+### Java ###
+*.class
+*.log
+*.ctxt
+
+# BlueJ
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+.mvn/wrapper/maven-wrapper.js
+mvnw
+mvnw.cmd
+
+### Logs ###
+logs/
+*.log
+*.out
+
+### OS files ###
+.DS_Store
+Thumbs.db
+
+### Spring Boot ###
+# Embedded server logs
+*.pid
+
+### Test output ###
+surefire-reports/
+failsafe-reports/
+
+### Coverage ###
+jacoco.exec
+jacoco-report/
+coverage/
+*.lcov
+
+### Sonar ###
+.sonar/
+.scannerwork/
+
+### VS Code (jeśli ktoś używa) ###
+.vscode/
+
+### Docker ###
+docker-data/

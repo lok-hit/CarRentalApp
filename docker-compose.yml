@@ -1,0 +1,104 @@
+version: "3.9"
+
+services:
+
+  # ============================
+  # SERVICE DISCOVERY
+  # ============================
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - carrental
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+
+  # ============================
+  # API GATEWAY
+  # ============================
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    depends_on:
+      - eureka-server
+      - redis
+      - keycloak
+    ports:
+      - "8080:8080"
+    networks:
+      - carrental
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - REDIS_HOST=redis
+      - KEYCLOAK_URL=http://keycloak:8080
+
+  # ============================
+  # MONITORING SERVICE
+  # ============================
+  monitoring-service:
+    build: ./monitoring-service
+    container_name: monitoring-service
+    depends_on:
+      - eureka-server
+      - otel-collector
+    ports:
+      - "8085:8085"
+    networks:
+      - carrental
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+
+  # ============================
+  # DOMAIN SERVICES
+  # ============================
+  car-service:
+    build: ./car-service
+    container_name: car-service
+    depends_on:
+      - eureka-server
+    networks:
+      - carrental
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+  reservation-service:
+    build: ./reservation-service
+    container_name: reservation-service
+    depends_on:
+      - eureka-server
+      - car-service
+    networks:
+      - carrental
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    depends_on:
+      - eureka-server
+    networks:
+      - carrental
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+  user-profile-service:
+    build: ./user-profile-service
+    container_name: user-profile-service
+    depends_on:
+      - eureka-server
+    networks:
+      - carrental
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    depends_on:
+      - eureka-server
+    networks
