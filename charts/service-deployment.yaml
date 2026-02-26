@@ -1,0 +1,44 @@
+{{- range $key, $svc := .Values.services }}
+  {{- if $svc.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $svc.name }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  replicas: {{ $svc.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $svc.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $svc.name }}
+    spec:
+      containers:
+        - name: {{ $svc.name }}
+          image: {{ $svc.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: {{ $svc.port }}
+          env:
+            {{- range $env := $svc.env }}
+            - name: {{ $env.name }}
+              value: {{ $env.value | quote }}
+            {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $svc.name }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  selector:
+    app: {{ $svc.name }}
+  ports:
+    - port: {{ default $svc.port $svc.service.port }}
+      targetPort: {{ $svc.port }}
+  type: {{ default "ClusterIP" $svc.service.type }}
+---
+{{- end }}
+  {{- end }}
