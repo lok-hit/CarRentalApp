@@ -1,170 +1,84 @@
-Architecture Overview
-The gateway acts as a reverse proxy and request orchestrator. It performs:
+API Gateway
+The API Gateway is the central entry point for all external traffic in the CarRentalApp platform. It provides routing, authentication, observability, resilience, and cross‑cutting concerns for all backend microservices.
 
-Authentication and authorization (JWT-based)
+Core Responsibilities
+Routing to backend services via Eureka discovery
 
-Request logging and correlation
+JWT authentication and authorization
 
-Distributed tracing and metrics export
+Rate limiting (Redis)
 
-Audit event publishing
+Circuit breakers (Resilience4j)
 
-Routing and load balancing to backend services
+Canary deployments (weighted routing)
 
-Error handling and resilience
+Distributed tracing (OpenTelemetry)
 
-The architecture is designed for Kubernetes, Prometheus, Grafana, and OpenTelemetry Collector.
+Metrics and health endpoints (Actuator)
 
-Key Components
-1. Spring Cloud Gateway
-   The gateway uses Spring Cloud Gateway as the reactive routing engine. It provides:
+Structured logging with correlation IDs
 
-Non-blocking request handling (Reactor Netty)
+Audit event publishing to Monitoring Service
 
-Route definitions for backend services
+Key Features
+Service Discovery Integration
+The gateway uses Eureka to dynamically resolve service instances:
 
-Global filters for cross-cutting logic
+Kod
+uri: lb://car-service
+Rate Limiting
+Token‑bucket rate limiting using Redis:
 
-Built-in support for rate limiting, retries, and circuit breakers
+Per‑user or per‑IP throttling
 
-2. Reactive WebClient
-   Outbound calls (e.g., audit events) use WebClient with:
+Burst capacity control
 
-Connection pooling
+429 responses when limits exceeded
 
-Timeouts
+Circuit Breakers
+Resilience4j protects backend services from cascading failures:
 
-Metrics instrumentation
+Failure rate thresholds
 
-Tracing propagation
+Slow call detection
 
-This ensures consistent performance and observability across all external calls.
+Fallback routes
 
-3. Observability Stack
-   The gateway includes full production-grade observability:
+Canary Deployments
+Weighted routing allows progressive rollout:
 
-Distributed Tracing
-OpenTelemetry instrumentation
+Kod
+Weight=group-cars, 90
+Weight=group-cars, 10
+Observability
+OpenTelemetry tracing with 100% sampling
 
-100% sampling (configurable)
+Prometheus metrics
 
-Trace propagation across all services
+WebFlux/WebClient instrumentation
 
-Export to OTLP collector
+Structured logs with traceId/spanId/correlationId
 
-Metrics
-JVM, system, and process metrics
+Endpoints
+/actuator/health
 
-WebFlux and WebClient metrics
+/actuator/metrics
 
-Gateway route metrics
+/actuator/prometheus
 
-Prometheus endpoint (/actuator/prometheus)
+/actuator/loggers
 
-Structured Logging
-Each log entry includes:
+Docker
+Kod
+docker build -t api-gateway .
+docker run -p 8080:8080 api-gateway
+CI/CD
+GitHub Actions workflow for build & test
 
-traceId
+Jenkins pipeline for Docker image build & push
 
-spanId
+Configuration
+All configuration is located in:
 
-correlationId
-
-userId (if authenticated)
-
-HTTP method, path, status, latency
-
-This enables full log–trace correlation.
-
-4. Health, Liveness, and Readiness Probes
-   The gateway exposes Kubernetes‑ready health endpoints:
-
-/actuator/health – full health
-
-/actuator/health/liveness – JVM liveness
-
-/actuator/health/readiness – readiness for traffic
-
-These ensure safe rollout, autoscaling, and self‑healing.
-
-5. Correlation and Logging Filters
-   Two custom filters ensure consistent request tracking:
-
-CorrelationIdFilter
-Generates a correlation ID if missing
-
-Propagates it through the request lifecycle
-
-Adds it to response headers
-
-LoggingFilter
-Publishes request events
-
-Logs structured request metadata
-
-Enriches logs with correlation and trace IDs
-
-6. Audit Service Integration
-   The gateway sends audit events to the monitoring service using a dedicated AuditService.
-   Events include:
-
-Timestamp
-
-User ID and roles
-
-HTTP method and path
-
-Status code and latency
-
-Correlation ID and trace ID
-
-Source system identifier
-
-This enables full compliance and traceability.
-
-7. Configuration (application.yml)
-   The gateway includes a complete production configuration:
-
-Actuator endpoints
-
-OpenTelemetry exporters
-
-Micrometer metrics
-
-Logging patterns
-
-WebClient tuning
-
-Monitoring-service URL
-
-Gateway routing and filters
-
-This configuration ensures the gateway is fully observable, debuggable, and ready for cloud deployment.
-
-8. Branching Strategy
-   The repository uses:
-
-develop — main integration branch
-
-feature/* — feature development
-
-main — stable releases
-
-The gateway code resides under the ApiGateway module.
-
-9. Technology Stack
-   Java 17
-
-Spring Boot 3
-
-Spring Cloud Gateway
-
-Spring WebFlux
-
-Micrometer
-
-OpenTelemetry
-
-Prometheus / Grafana
-
-Docker / Kubernetes
+Kod
+src/main/resources/application.yml
