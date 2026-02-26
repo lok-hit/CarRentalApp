@@ -1,0 +1,72 @@
+namespace: carrental
+
+global:
+  eurekaUrl: http://eureka-server.carrental:8761/eureka/
+  otelEndpoint: http://otel-collector.carrental:4317
+
+services:
+  apiGateway:
+    enabled: true
+    name: api-gateway
+    image: your-registry/api-gateway:latest
+    replicas: 2
+    port: 8080
+    service:
+      type: LoadBalancer
+      port: 80
+    env:
+      - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        value: "{{ .Values.global.eurekaUrl }}"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: "{{ .Values.global.otelEndpoint }}"
+      - name: REDIS_HOST
+        value: redis
+
+  eurekaServer:
+    enabled: true
+    name: eureka-server
+    image: your-registry/eureka-server:latest
+    replicas: 1
+    port: 8761
+
+  monitoringService:
+    enabled: true
+    name: monitoring-service
+    image: your-registry/monitoring-service:latest
+    replicas: 1
+    port: 8085
+
+  carService:
+    enabled: true
+    name: car-service
+    image: your-registry/car-service:latest
+    replicas: 1
+    port: 8080
+
+  reservationService:
+    enabled: true
+    name: reservation-service
+    image: your-registry/reservation-service:latest
+    replicas: 1
+    port: 8080
+
+  paymentService:
+    enabled: true
+    name: payment-service
+    image: your-registry/payment-service:latest
+    replicas: 1
+    port: 8080
+
+  userProfileService:
+    enabled: true
+    name: user-profile-service
+    image: your-registry/user-profile-service:latest
+    replicas: 1
+    port: 8080
+
+  notificationService:
+    enabled: true
+    name: notification-service
+    image: your-registry/notification-service:latest
+    replicas: 1
+    port: 8080
