@@ -1,3 +1,5 @@
 package car_rental_app.domain.saga.event;
 
-public record PaymentFailedEvent(String reservationId, String carId) {}
+import car_rental_app.domain.model.CarId;
+
+public record PaymentFailedEvent(String reservationId, CarId carId) {}

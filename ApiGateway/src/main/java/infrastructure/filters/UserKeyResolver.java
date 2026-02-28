@@ -17,10 +17,11 @@ public class UserKeyResolver implements KeyResolver {
     }
 
     private String resolveIp(ServerWebExchange exchange) {
-        return exchange.getRequest()
-                .getRemoteAddress()
-                .getAddress()
-                .getHostAddress();
+        var remoteAddress = exchange.getRequest().getRemoteAddress();
+        if (remoteAddress != null && remoteAddress.getAddress() != null) {
+            return remoteAddress.getAddress().getHostAddress();
+        }
+        return "unknown";
     }
 
 }

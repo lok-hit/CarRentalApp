@@ -1,7 +1,10 @@
 package car_rental_app.domain.model;
-public record Price(double value) {
+
+import java.math.BigDecimal;
+
+public record Price(java.math.BigDecimal value) {
     public Price {
-        if (value < 0) {
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
               throw new IllegalArgumentException("Price cannot be negative");
         }
     }

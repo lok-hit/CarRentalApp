@@ -21,7 +21,7 @@ public class Car {
         this.category = category;
         this.price = price;
         this.status = AvailabilityStatus.AVAILABLE;
-        domainEvents.add(new CarCreatedEvent(id.value(), category.name(), BigDecimal.valueOf(price.value())));
+        domainEvents.add(new CarCreatedEvent(id.value(), category.name(), price.value()));
     }
 
     public void markAsUnavailable() {
@@ -38,7 +38,7 @@ public class Car {
 
     public void changePrice(Price newPrice) {
         this.price = newPrice;
-        domainEvents.add(new CarPriceChangedEvent(id.value(), BigDecimal.valueOf(newPrice.value())));
+        domainEvents.add(new CarPriceChangedEvent(id.value(), newPrice.value()));
     }
 
     public List<Object> getDomainEvents() {

@@ -1,0 +1,101 @@
+asyncapi: 2.6.0
+info:
+  title: Car Service Saga Events
+  version: 1.0.0
+  description: |
+    Kontrakt eventów Sagi używanych przez car-service.
+    Eventy są publikowane przez reservation-service i payment-service,
+    a konsumowane przez car-service.
+
+defaultContentType: application/json
+
+servers:
+  kafka-broker:
+    url: kafka:9092
+    protocol: kafka
+
+channels:
+
+  reservation-created:
+    description: Event informujący, że utworzono rezerwację.
+    subscribe:
+      message:
+        $ref: '#/components/messages/ReservationCreatedEvent'
+
+  reservation-cancelled:
+    description: Event informujący, że rezerwacja została anulowana.
+    subscribe:
+      message:
+        $ref: '#/components/messages/ReservationCancelledEvent'
+
+  payment-failed:
+    description: Event informujący, że płatność nie powiodła się.
+    subscribe:
+      message:
+        $ref: '#/components/messages/PaymentFailedEvent'
+
+components:
+
+  messages:
+
+    ReservationCreatedEvent:
+      name: ReservationCreatedEvent
+      title: Reservation Created
+      payload:
+        $ref: '#/components/schemas/ReservationCreatedEvent'
+
+    ReservationCancelledEvent:
+      name: ReservationCancelledEvent
+      title: Reservation Cancelled
+      payload:
+        $ref: '#/components/schemas/ReservationCancelledEvent'
+
+    PaymentFailedEvent:
+      name: PaymentFailedEvent
+      title: Payment Failed
+      payload:
+        $ref: '#/components/schemas/PaymentFailedEvent'
+
+  schemas:
+
+    ReservationCreatedEvent:
+      type: object
+      required: [reservationId, carId, userId, timestamp]
+      properties:
+        reservationId:
+          type: string
+        carId:
+          type: string
+        userId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ReservationCancelledEvent:
+      type: object
+      required: [reservationId, carId, timestamp]
+      properties:
+        reservationId:
+          type: string
+        carId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    PaymentFailedEvent:
+      type: object
+      required: [paymentId, reservationId, carId, reason, timestamp]
+      properties:
+        paymentId:
+          type: string
+        reservationId:
+          type: string
+        carId:
+          type: string
+        reason:
+          type: string
+        timestamp:
+          type: string
+          format: date-time

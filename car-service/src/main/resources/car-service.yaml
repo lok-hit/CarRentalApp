@@ -1,0 +1,226 @@
+openapi: 3.0.3
+info:
+  title: Car Service API
+  version: 1.0.0
+  description: |
+    API dla mikroserwisu Car Service (DDD + Hexagonal + CQRS).
+    Zawiera operacje Command (ADMIN/OPS) i Query (USER/ADMIN).
+    Autoryzacja przez Keycloak (JWT Bearer).
+
+servers:
+  - url: https://api.example.com/car-service
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  ############################################################
+  # QUERY API (USER, ADMIN)
+  ############################################################
+
+  /ca
+  rs:
+    get:
+      summary: Pobierz listę dostępnych samochodów
+      tags: [Query]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: X-Trace-Id
+          schema: { type: string }
+          required: false
+        - in: header
+          name: X-Span-Id
+          schema: { type: string }
+          required: false
+      responses:
+        '200':
+          description: Lista dostępnych samochodów
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (brak roli USER/ADMIN)
+
+  /cars/{id}:
+    get:
+      summary: Pobierz samochód po ID
+      tags: [Query]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Trace-Id
+          schema: { type: string }
+          required: false
+        - in: header
+          name: X-Span-Id
+          schema: { type: string }
+          required: false
+      responses:
+        '200':
+          description: Samochód
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '404':
+          description: Nie znaleziono
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  ############################################################
+  # COMMAND API (ADMIN, OPS)
+  ############################################################
+
+  /cars:
+    post:
+      summary: Utwórz nowy samochód
+      tags: [Command]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCarCommand'
+      responses:
+        '201':
+          description: Utworzono
+        '400':
+          description: Walidacja błędów
+        '403':
+          description: Forbidden (wymaga roli ADMIN)
+
+  /cars/{id}/price:
+    post:
+      summary: Zmień cenę samochodu
+      tags: [Command]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeCarPriceCommand'
+      responses:
+        '200':
+          description: Cena zmieniona
+        '400':
+          description: Walidacja błędów
+        '403':
+          description: Forbidden (ADMIN)
+
+  /cars/{id}/available:
+    post:
+      summary: Oznacz samochód jako dostępny
+      tags: [Command]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Zmieniono status
+        '403':
+          description: Forbidden (OPS)
+
+  /cars/{id}/unavailable:
+    post:
+      summary: Oznacz samochód jako niedostępny
+      tags: [Command]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Zmieniono status
+        '403':
+          description: Forbidden (OPS)
+
+components:
+
+  ############################################################
+  # SECURITY
+  ############################################################
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  ############################################################
+  # SCHEMAS
+  ############################################################
+
+  schemas:
+
+    Car:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+          enum: [SEDAN, SUV, HATCHBACK, VAN, ELECTRIC]
+        price:
+          type: number
+          format: double
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE]
+
+    CreateCarCommand:
+      type: object
+      required: [id, category, price]
+      properties:
+        id:
+          type: string
+          minLength: 1
+        category:
+          type: string
+          minLength: 1
+        price:
+          type: number
+          format: double
+          minimum: 0.00
+
+    ChangeCarPriceCommand:
+      type: object
+      required: [id, newPrice]
+      properties:
+        id:
+          type: string
+          minLength: 1
+        newPrice:
+          type: number
+          format: double
+          minimum: 0.00
