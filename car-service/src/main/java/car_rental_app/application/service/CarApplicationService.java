@@ -93,7 +93,7 @@ public class CarApplicationService implements CarCommandPort {
     }
 
     private void publishEvents(Car car) {
-        car.getDomainEvents().forEach(eventPublisher::publish);
+        car.getDomainEvents().forEach(event -> eventPublisher.publish("car-events", event));
     }
 
     private String trace() {

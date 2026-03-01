@@ -19,7 +19,6 @@
 .idea/**/dbnavigator.xml
 
 # IntelliJ generated files
-out/
 
 ### Java ###
 *.class
