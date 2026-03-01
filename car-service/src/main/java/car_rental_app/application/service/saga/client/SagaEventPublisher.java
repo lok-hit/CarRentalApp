@@ -1,8 +1,9 @@
 package car_rental_app.application.service.saga.client;
 
-import car_rental_app.application.service.saga.event.PaymentFailedEvent;
-import car_rental_app.application.service.saga.event.ReservationCancelledEvent;
-import car_rental_app.application.service.saga.event.ReservationCreatedEvent;
+
+import car_rental_app.domain.saga.event.PaymentFailedEvent;
+import car_rental_app.domain.saga.event.ReservationCancelledEvent;
+import car_rental_app.domain.saga.event.ReservationCreatedEvent;
 
 public interface SagaEventPublisher {
 
