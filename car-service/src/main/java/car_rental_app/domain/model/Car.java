@@ -4,6 +4,7 @@ import car_rental_app.domain.event.CarCreatedEvent;
 import car_rental_app.domain.event.CarMarkedAsAvailableEvent;
 import car_rental_app.domain.event.CarMarkedAsUnavailableEvent;
 import car_rental_app.domain.event.CarPriceChangedEvent;
+import car_rental_app.domain.saga.event.DomainEvent;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ public class Car {
     private CarCategory category;
     private Price price;
     private AvailabilityStatus status;
-    private final List<Object> domainEvents = new ArrayList<>();
+    private final List<DomainEvent> domainEvents = new ArrayList<>();
 
     public Car(CarId id, CarCategory category, Price price) {
         this.id = id;
@@ -41,7 +42,7 @@ public class Car {
         domainEvents.add(new CarPriceChangedEvent(id.value(), newPrice.value()));
     }
 
-    public List<Object> getDomainEvents() {
+    public List<DomainEvent> getDomainEvents() {
         return List.copyOf(domainEvents);
     }
 

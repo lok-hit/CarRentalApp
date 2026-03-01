@@ -1,3 +1,5 @@
 package car_rental_app.domain.event;
 
-public record CarMarkedAsAvailableEvent( String carId ) {}
+import car_rental_app.domain.saga.event.DomainEvent;
+
+public record CarMarkedAsAvailableEvent(String carId ) implements DomainEvent {}
