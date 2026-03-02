@@ -1,12 +1,7 @@
 package car_rental_app.domain.model;
 
-import car_rental_app.domain.event.CarCreatedEvent;
-import car_rental_app.domain.event.CarMarkedAsAvailableEvent;
-import car_rental_app.domain.event.CarMarkedAsUnavailableEvent;
-import car_rental_app.domain.event.CarPriceChangedEvent;
-import car_rental_app.domain.saga.event.DomainEvent;
+import car_rental_app.domain.event.*;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,9 +37,12 @@ public class Car {
         domainEvents.add(new CarPriceChangedEvent(id.value(), newPrice.value()));
     }
 
-    public List<DomainEvent> getDomainEvents() {
-        return List.copyOf(domainEvents);
+    public List<DomainEvent> drainDomainEvents() {
+        List<DomainEvent> events = List.copyOf(domainEvents);
+        domainEvents.clear();
+        return events;
     }
+
 
     public CarId id() {
         return id;

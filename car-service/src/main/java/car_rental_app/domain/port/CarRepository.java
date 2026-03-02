@@ -12,4 +12,5 @@ public interface CarRepository {
     Optional<Car> findById(CarId id);
 
     List<Car> findAvailable();
+    void DeleteAll();
 }

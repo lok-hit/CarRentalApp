@@ -6,8 +6,11 @@ import car_rental_app.domain.model.CarId;
 import car_rental_app.domain.saga.event.PaymentFailedEvent;
 import car_rental_app.domain.saga.event.ReservationCancelledEvent;
 import car_rental_app.domain.saga.event.ReservationCreatedEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
 
 import static org.mockito.Mockito.*;
 
@@ -15,36 +18,42 @@ class ReservationSagaListenerTest {
 
     private ReservationSagaHandler handler;
     private ReservationSagaListener listener;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setup() {
         handler = mock(ReservationSagaHandler.class);
         listener = new ReservationSagaListener(handler);
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
     }
 
     @Test
-    void shouldDelegateReservationCreatedEvent() {
-        var event = new ReservationCreatedEvent("r1", new CarId("c1"));
+    void shouldDelegateReservationCreatedEvent() throws Exception {
+        var event = new ReservationCreatedEvent("r1", new CarId("c1"), "u1");
+        String json = objectMapper.writeValueAsString(event);
 
-        listener.onReservationCreated(event);
+        listener.onReservationCreated(json);
 
         verify(handler).onReservationCreated(event);
     }
 
     @Test
-    void shouldDelegateReservationCancelledEvent() {
-        var event = new ReservationCancelledEvent("r1", new CarId("c1"));
+    void shouldDelegateReservationCancelledEvent() throws Exception {
+        var event = new ReservationCancelledEvent("r1", new CarId("c1"), "u7", Instant.now());
+        String json = objectMapper.writeValueAsString(event);
 
-        listener.onReservationCancelled(event);
+        listener.onReservationCancelled(json);
 
         verify(handler).onReservationCancelled(event);
     }
 
     @Test
-    void shouldDelegatePaymentFailedEvent() {
-        var event = new PaymentFailedEvent("r1", new CarId("c1"));
+    void shouldDelegatePaymentFailedEvent() throws Exception {
+        var event = new PaymentFailedEvent("r1", new CarId("c1"), "u4");
+        String json = objectMapper.writeValueAsString(event);
 
-        listener.onPaymentFailed(event);
+        listener.onPaymentFailed(json);
 
         verify(handler).onReservationFailed(event);
     }

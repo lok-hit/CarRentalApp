@@ -4,7 +4,7 @@ import car_rental_app.application.command.MarkCarAsAvailableCommand;
 import car_rental_app.application.command.MarkCarAsUnavailableCommand;
 import car_rental_app.application.service.saga.ReservationSagaHandler;
 import car_rental_app.domain.model.CarId;
-import car_rental_app.domain.port.CarCommandPort;
+import car_rental_app.application.port.CarCommandPort;
 import car_rental_app.domain.port.OutboxEventStore;
 import car_rental_app.domain.saga.event.PaymentFailedEvent;
 import car_rental_app.domain.saga.event.ReservationCancelledEvent;
@@ -28,26 +28,23 @@ class ReservationSagaHandlerTest {
     }
 
     @Test
-    void onReservationCreatedShouldMarkCarUnavailableAndSaveEvent() {
-        var event = new ReservationCreatedEvent("r1", new CarId("c1"));
+    void onReservationCreatedShouldMarkCarUnavailable() {
+        var event = new ReservationCreatedEvent("r1", new CarId("c1"), "u8");
         handler.onReservationCreated(event);
-        verify(carCommandPort).handle(new MarkCarAsUnavailableCommand(new CarId("c1")));
-        verify(outbox).saveEvent("r1", event);
+        verify(carCommandPort).handle(new MarkCarAsUnavailableCommand(new CarId("c1").value()));
     }
 
     @Test
-    void onReservationCancelledShouldMarkCarAvailableAndSaveEvent() {
-        var event = new ReservationCancelledEvent("r1", new CarId("c1"));
+    void onReservationCancelledShouldMarkCarAvailable() {
+        var event = new ReservationCancelledEvent("r1", new CarId("c1"), "u7", java.time.Instant.now());
         handler.onReservationCancelled(event);
         verify(carCommandPort).handle(new MarkCarAsAvailableCommand(new CarId("c1")));
-        verify(outbox).saveEvent("r1", event);
     }
 
     @Test
-    void onReservationFailedShouldMarkCarAvailableAndSaveEvent() {
-        var event = new PaymentFailedEvent("r1", new CarId("c1"));
+    void onReservationFailedShouldMarkCarAvailable() {
+        var event = new PaymentFailedEvent("r1", new CarId("c1"), "u4");
         handler.onReservationFailed(event);
         verify(carCommandPort).handle(new MarkCarAsAvailableCommand(new CarId("c1")));
-        verify(outbox).saveEvent("r1", event);
     }
 }

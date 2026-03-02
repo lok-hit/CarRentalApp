@@ -2,11 +2,9 @@ package car_rental_app.application.service.saga;
 
 import car_rental_app.application.command.MarkCarAsAvailableCommand;
 import car_rental_app.application.command.MarkCarAsUnavailableCommand;
-import car_rental_app.domain.port.CarCommandPort;
+import car_rental_app.application.port.CarCommandPort;
 import car_rental_app.domain.port.OutboxEventStore;
-import car_rental_app.domain.saga.event.PaymentFailedEvent;
-import car_rental_app.domain.saga.event.ReservationCancelledEvent;
-import car_rental_app.domain.saga.event.ReservationCreatedEvent;
+import car_rental_app.domain.saga.event.*;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,27 +24,58 @@ public class ReservationSagaHandler {
     }
 
     @Transactional
+    public void onReservationConfirmed(ReservationConfirmedEvent event) {
+        try {
+            carCommandPort.handle(new MarkCarAsUnavailableCommand(event.getCarId()));
+            log.info("[traceId={}] Car marked unavailable carId={}" + event.getCarId());
+            log.info("[traceId={}] Saga END: onReservationConfirmed OK reservationId={}" + event.getReservationId());
+        } catch (Exception ex) {
+            log.severe("[traceId={}] Saga ERROR onReservationConfirmed reservationId={}, error={}" + event.getReservationId() + ex.getMessage());
+            throw ex;
+        }
+    }
+
+    @Transactional
     public void onReservationCreated(ReservationCreatedEvent event) {
         log.info(() -> "[" + trace() + "] Saga: ReservationCreated car=" + event.carId());
-        carCommandPort.handle(new MarkCarAsUnavailableCommand(event.carId()));
-
-        outboxEventStore.saveEvent(event.reservationId(), event);
+        carCommandPort.handle(new MarkCarAsUnavailableCommand(event.carId().value()));
     }
 
     @Transactional
     public void onReservationCancelled(ReservationCancelledEvent event) {
         log.info(() -> "[" + trace() + "] Saga: ReservationCancelled car=" + event.carId());
         carCommandPort.handle(new MarkCarAsAvailableCommand(event.carId()));
-
-        outboxEventStore.saveEvent(event.reservationId(), event);
     }
 
     @Transactional
     public void onReservationFailed(PaymentFailedEvent event) {
         log.info(() -> "[" + trace() + "] Saga: ReservationFailed car=" + event.carId());
         carCommandPort.handle(new MarkCarAsAvailableCommand(event.carId()));
+    }
 
-        outboxEventStore.saveEvent(event.reservationId(), event);
+    @Transactional
+    public void onPaymentConfirmed(PaymentConfirmedEvent event) {
+        String traceId = MDC.get("traceId");
+        log.info("[traceId={}] Saga START: onPaymentCompleted reservationId={}, carId={}, userId={}");
+
+        try {
+            carCommandPort.handle(new MarkCarAsUnavailableCommand(event.getCarId()));
+            log.info("[traceId={}] Car marked unavailable carId={}");
+            
+            // Create and save ReservationConfirmedEvent to outbox
+            ReservationConfirmedEvent confirmedEvent = new ReservationConfirmedEvent(
+                event.getReservationId(),
+                event.getCarId(),
+                event.getUserId()
+            );
+            outboxEventStore.saveEvent(event.getReservationId(), confirmedEvent);
+            
+            log.info("[traceId={}] ReservationConfirmedEvent saved to outbox reservationId={}" + event.getReservationId());
+            log.info("[traceId={}] Saga END: onPaymentCompleted OK reservationId={}" + event.getReservationId());
+        } catch (Exception ex) {
+            log.severe("[traceId={}] Saga ERROR onPaymentCompleted reservationId={}, error={}" + event.getReservationId() + ex);
+            throw ex;
+        }
     }
 
     private String trace() {

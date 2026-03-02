@@ -18,14 +18,14 @@ public class CarDocument {
     @NotBlank
     private String id;
 
-    @NotBlank
+    @NotNull
     private CarCategoryDocument category;
 
     @NotNull
     @Positive
     private BigDecimal price;
 
-    @NotBlank
+    @NotNull
     private StatusDocument status;
 
     @Valid

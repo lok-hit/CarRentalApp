@@ -4,16 +4,18 @@ import car_rental_app.application.command.ChangeCarPriceCommand;
 import car_rental_app.application.command.CreateCarCommand;
 import car_rental_app.application.command.MarkCarAsAvailableCommand;
 import car_rental_app.application.command.MarkCarAsUnavailableCommand;
+import car_rental_app.application.service.exception.CarReservationRejectedException;
 import car_rental_app.domain.model.Car;
 import car_rental_app.domain.model.CarCategory;
 import car_rental_app.domain.model.CarId;
 import car_rental_app.domain.model.Price;
-import car_rental_app.domain.port.CarCommandPort;
+import car_rental_app.application.port.CarCommandPort;
 import car_rental_app.domain.port.CarRepository;
 import car_rental_app.domain.port.EventPublisher;
 import car_rental_app.domain.port.ReservationPolicy;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,9 @@ public class CarApplicationService implements CarCommandPort {
     private final CarRepository repository;
     private final EventPublisher eventPublisher;
     private final ReservationPolicy reservationPolicy;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     public CarApplicationService(CarRepository repository, EventPublisher eventPublisher, ReservationPolicy reservationPolicy) {
@@ -62,19 +67,19 @@ public class CarApplicationService implements CarCommandPort {
     public void handle(MarkCarAsUnavailableCommand cmd) {
 
         log.info(() -> "[" + trace() + "] MarkCarAsUnavailableCommand id=" + cmd.id());
-        Car car = repository.findById(new CarId(cmd.id().value())).orElseThrow(() -> {
+        Car car = repository.findById(new CarId(cmd.id())).orElseThrow(() -> {
             log.warning(() -> "[" + trace() + "] Car not found id=" + cmd.id());
             return new IllegalArgumentException("Car not found: " + cmd.id());
         });
         if (!reservationPolicy.canBeReserved(car)) {
-            log.info(() -> "[" + trace() + "] Reservation policy rejected id=" + cmd.id());
-            return;
+            throw new CarReservationRejectedException("[" + trace() + "] Reservation rejected for car=" + cmd.id());
         }
         car.markAsUnavailable();
         repository.save(car);
         publishEvents(car);
         log.info(() -> "[" + trace() + "] Car marked UNAVAILABLE id=" + cmd.id());
     }
+
 
     @Override
     @Transactional
@@ -93,7 +98,7 @@ public class CarApplicationService implements CarCommandPort {
     }
 
     private void publishEvents(Car car) {
-        car.getDomainEvents().forEach(event -> eventPublisher.publish("car-events", event));
+        car.drainDomainEvents().forEach(applicationEventPublisher::publishEvent);
     }
 
     private String trace() {
