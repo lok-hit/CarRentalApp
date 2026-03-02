@@ -42,9 +42,12 @@ public class Car {
         domainEvents.add(new CarPriceChangedEvent(id.value(), newPrice.value()));
     }
 
-    public List<DomainEvent> getDomainEvents() {
-        return List.copyOf(domainEvents);
+    public List<DomainEvent> drainDomainEvents() {
+        List<DomainEvent> events = List.copyOf(domainEvents);
+        domainEvents.clear();
+        return events;
     }
+
 
     public CarId id() {
         return id;

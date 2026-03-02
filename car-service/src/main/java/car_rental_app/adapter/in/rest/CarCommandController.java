@@ -5,7 +5,7 @@ import car_rental_app.application.command.CreateCarCommand;
 import car_rental_app.application.command.MarkCarAsAvailableCommand;
 import car_rental_app.application.command.MarkCarAsUnavailableCommand;
 import car_rental_app.domain.model.CarId;
-import car_rental_app.domain.port.CarCommandPort;
+import car_rental_app.application.port.CarCommandPort;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.slf4j.MDC;
@@ -34,10 +34,13 @@ public class CarCommandController {
         commandPort.handle(cmd);
     }
 
-    @PostMapping("/{id}/price")
-    @PreAuthorize("hasRole('ADMIN')")
-    public void changePrice(@NotBlank @PathVariable String id, @Valid @RequestBody ChangeCarPriceCommand cmd) {
-        log.info(() -> "[" + trace() + "] REST: ChangePrice id=" + id);
+    @PutMapping("/{id}/price")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public void changePrice(@PathVariable @NotBlank String id, @RequestBody ChangeCarPriceCommand cmd) {
+        log.info(() -> "[" + trace() + "] REST: ChangeCarPrice id=" + id);
+        if (!id.equals(cmd.id())) {
+            throw new IllegalArgumentException("Path id does not match body id");
+        }
         commandPort.handle(cmd);
     }
 
@@ -52,7 +55,7 @@ public class CarCommandController {
     @PreAuthorize("hasRole('OPS')")
     public void markUnavailable(@NotBlank @PathVariable String id) {
         log.info(() -> "[" + trace() + "] REST: MarkUnavailable id=" + id);
-        commandPort.handle(new MarkCarAsUnavailableCommand(new CarId(id)));
+        commandPort.handle(new MarkCarAsUnavailableCommand(new CarId(id).value()));
     }
 
     private String trace() {

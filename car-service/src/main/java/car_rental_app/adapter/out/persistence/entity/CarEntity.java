@@ -25,6 +25,7 @@ public class CarEntity {
     private BigDecimal rentPrice;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private AvailabilityStatusEntity statusEntity;
 
     @OneToMany(mappedBy = "car", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

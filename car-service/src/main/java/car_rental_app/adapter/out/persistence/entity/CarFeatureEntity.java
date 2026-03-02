@@ -1,6 +1,8 @@
 package car_rental_app.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "car_features")
@@ -9,6 +11,10 @@ public class CarFeatureEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank
+    @NotNull
+    @Column(nullable = false)
     private String feature;
 
     @ManyToOne(fetch = FetchType.LAZY)

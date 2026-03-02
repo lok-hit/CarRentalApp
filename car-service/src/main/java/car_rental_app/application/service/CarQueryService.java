@@ -1,5 +1,6 @@
 package car_rental_app.application.service;
 
+import car_rental_app.application.query.CarDto;
 import car_rental_app.application.query.GetAvailableCarsQuery;
 import car_rental_app.application.query.GetCarByIdQuery;
 import car_rental_app.domain.model.Car;

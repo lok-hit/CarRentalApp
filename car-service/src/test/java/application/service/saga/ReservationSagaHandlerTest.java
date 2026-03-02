@@ -4,7 +4,7 @@ import car_rental_app.application.command.MarkCarAsAvailableCommand;
 import car_rental_app.application.command.MarkCarAsUnavailableCommand;
 import car_rental_app.application.service.saga.ReservationSagaHandler;
 import car_rental_app.domain.model.CarId;
-import car_rental_app.domain.port.CarCommandPort;
+import car_rental_app.application.port.CarCommandPort;
 import car_rental_app.domain.port.OutboxEventStore;
 import car_rental_app.domain.saga.event.PaymentFailedEvent;
 import car_rental_app.domain.saga.event.ReservationCancelledEvent;

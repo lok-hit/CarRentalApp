@@ -8,6 +8,7 @@ import car_rental_app.domain.model.Car;
 import car_rental_app.domain.model.CarId;
 import car_rental_app.domain.port.CarRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.MDC;
 
@@ -44,6 +45,13 @@ public class CarRepositoryAdapter implements CarRepository {
                 .stream()
                 .map(CarMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void DeleteAll() {
+        log.fine(() -> "[" +trace() + "] JPA: delete all");
+        jpa.deleteAll();
     }
 
     @Override

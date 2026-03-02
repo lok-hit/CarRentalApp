@@ -1,4 +1,4 @@
-package car_rental_app.domain.port;
+package car_rental_app.application.port;
 
 import car_rental_app.application.command.ChangeCarPriceCommand;
 import car_rental_app.application.command.CreateCarCommand;
