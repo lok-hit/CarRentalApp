@@ -1,9 +1,10 @@
 package car_rental_app.domain.saga.event;
 
+import car_rental_app.domain.event.DomainEvent;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ReservationConfirmedEvent {
+public class ReservationConfirmedEvent extends DomainEvent {
 
     private final String reservationId;
     private final String carId;
@@ -28,6 +29,11 @@ public class ReservationConfirmedEvent {
 
     public String getUserId() {
         return userId;
+    }
+
+    @Override
+    public String eventName() {
+        return "ReservationConfirmedEvent";
     }
 
     @Override

@@ -61,9 +61,19 @@ public class ReservationSagaHandler {
         try {
             carCommandPort.handle(new MarkCarAsUnavailableCommand(event.getCarId()));
             log.info("[traceId={}] Car marked unavailable carId={}");
-            log.info("[traceId={}] Saga END: onPaymentCompleted OK reservationId={}");
+            
+            // Create and save ReservationConfirmedEvent to outbox
+            ReservationConfirmedEvent confirmedEvent = new ReservationConfirmedEvent(
+                event.getReservationId(),
+                event.getCarId(),
+                event.getUserId()
+            );
+            outboxEventStore.saveEvent(event.getReservationId(), confirmedEvent);
+            
+            log.info("[traceId={}] ReservationConfirmedEvent saved to outbox reservationId={}" + event.getReservationId());
+            log.info("[traceId={}] Saga END: onPaymentCompleted OK reservationId={}" + event.getReservationId());
         } catch (Exception ex) {
-            log.severe("[traceId={}] Saga ERROR onPaymentCompleted reservationId={}, error={}" + ex);
+            log.severe("[traceId={}] Saga ERROR onPaymentCompleted reservationId={}, error={}" + event.getReservationId() + ex);
             throw ex;
         }
     }

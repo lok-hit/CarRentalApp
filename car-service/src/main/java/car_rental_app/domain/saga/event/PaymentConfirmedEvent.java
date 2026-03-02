@@ -8,19 +8,19 @@ public class PaymentConfirmedEvent {
     private final String reservationId;
     private final String carId;
     private final String userId;
-    private final String paymentId;
+    private final String paymentStatus;
 
     @JsonCreator
     public PaymentConfirmedEvent(
             @JsonProperty("reservationId") String reservationId,
             @JsonProperty("carId") String carId,
             @JsonProperty("userId") String userId,
-            @JsonProperty("paymentId") String paymentId
+            @JsonProperty("paymentStatus") String paymentStatus
     ) {
         this.reservationId = reservationId;
         this.carId = carId;
         this.userId = userId;
-        this.paymentId = paymentId;
+        this.paymentStatus = paymentStatus;
     }
 
     public String getReservationId() {
@@ -35,8 +35,8 @@ public class PaymentConfirmedEvent {
         return userId;
     }
 
-    public String getPaymentId() {
-        return paymentId;
+    public String getPaymentStatus() {
+        return paymentStatus;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class PaymentConfirmedEvent {
                 "reservationId='" + reservationId + '\'' +
                 ", carId='" + carId + '\'' +
                 ", userId='" + userId + '\'' +
-                ", paymentId='" + paymentId + '\'' +
+                ", paymentStatus='" + paymentStatus + '\'' +
                 '}';
     }
 }
