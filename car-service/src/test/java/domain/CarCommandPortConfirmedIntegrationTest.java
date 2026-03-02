@@ -1,7 +1,7 @@
 package domain;
 
 import car_rental_app.BaseIntegrationTest;
-import car_rental_app.adapter.out.persistence.CarRepositoryAdapter;
+import car_rental_app.adapter.out.CarMongoRepositoryAdapter;
 import car_rental_app.domain.model.*;
 import car_rental_app.application.port.CarCommandPort;
 import car_rental_app.domain.saga.event.ReservationConfirmedEvent;
@@ -15,11 +15,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
 public class CarCommandPortConfirmedIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
-    CarRepositoryAdapter carRepository;
+    CarMongoRepositoryAdapter carRepository;
 
     @Autowired
     CarCommandPort carCommandPort;

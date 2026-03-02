@@ -19,7 +19,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = CarApplicationService.class)
+@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
 public class SagaListenerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
@@ -33,7 +33,7 @@ public class SagaListenerIntegrationTest extends BaseIntegrationTest {
                         "org.apache.kafka.common.serialization.StringSerializer",
                         "value.serializer",
                         "org.apache.kafka.common.serialization.StringSerializer"));
-        ReservationCreatedEvent event = new ReservationCreatedEvent("r1", new CarId("c1"));
+        ReservationCreatedEvent event = new ReservationCreatedEvent("r1", new CarId("c1"), "0");
         String json = new ObjectMapper().writeValueAsString(event);
         // when
         producer.send(new ProducerRecord<>("reservation-created", json));

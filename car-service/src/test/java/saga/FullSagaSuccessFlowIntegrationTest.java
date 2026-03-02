@@ -5,6 +5,7 @@ import car_rental_app.adapter.out.messaging.outbox.OutboxEventRepository;
 import car_rental_app.domain.model.CarId;
 import car_rental_app.domain.saga.event.ReservationConfirmedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import car_rental_app.domain.saga.event.PaymentCompletedEvent;
 import car_rental_app.domain.saga.event.ReservationCreatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +16,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
@@ -24,6 +26,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
 public class FullSagaSuccessFlowIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
@@ -41,7 +44,7 @@ public class FullSagaSuccessFlowIntegrationTest extends BaseIntegrationTest {
                 "org.apache.kafka.common.serialization.StringSerializer"));
 
         // 1)
-        ReservationCreatedEvent created = new ReservationCreatedEvent("r1", new CarId("c1"));
+        ReservationCreatedEvent created = new ReservationCreatedEvent("r1", new CarId("c1"), "8");
         producer.send(new ProducerRecord<>("reservation-created", mapper.writeValueAsString(created)));
 
         // 2)

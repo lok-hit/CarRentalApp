@@ -9,6 +9,8 @@ import car_rental_app.domain.saga.event.ReservationCreatedEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+
 import static org.mockito.Mockito.*;
 
 class ReservationSagaListenerTest {
@@ -24,7 +26,7 @@ class ReservationSagaListenerTest {
 
     @Test
     void shouldDelegateReservationCreatedEvent() {
-        var event = new ReservationCreatedEvent("r1", new CarId("c1"));
+        var event = new ReservationCreatedEvent("r1", new CarId("c1"), "u1");
 
         listener.onReservationCreated(event);
 
@@ -33,7 +35,7 @@ class ReservationSagaListenerTest {
 
     @Test
     void shouldDelegateReservationCancelledEvent() {
-        var event = new ReservationCancelledEvent("r1", new CarId("c1"));
+        var event = new ReservationCancelledEvent("r1", new CarId("c1"), "u7", Instant.now());
 
         listener.onReservationCancelled(event);
 
@@ -42,7 +44,7 @@ class ReservationSagaListenerTest {
 
     @Test
     void shouldDelegatePaymentFailedEvent() {
-        var event = new PaymentFailedEvent("r1", new CarId("c1"));
+        var event = new PaymentFailedEvent("r1", new CarId("c1"), "u4");
 
         listener.onPaymentFailed(event);
 

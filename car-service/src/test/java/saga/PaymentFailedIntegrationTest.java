@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(classes = CarServiceMain.class)
+@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
 public class PaymentFailedIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
@@ -41,7 +41,7 @@ public class PaymentFailedIntegrationTest extends BaseIntegrationTest {
                 "org.apache.kafka.common.serialization.StringSerializer"
         ) );
 
-        PaymentFailedEvent event = new PaymentFailedEvent("r1", new CarId("c1"));
+        PaymentFailedEvent event = new PaymentFailedEvent("r1", new CarId("c1"), "8");
         String json = new ObjectMapper().writeValueAsString(event);
 
         // when

@@ -8,6 +8,7 @@ import car_rental_app.domain.model.AvailabilityStatus;
 import car_rental_app.domain.model.Car;
 import car_rental_app.domain.model.CarId;
 import car_rental_app.domain.port.CarRepository;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.MDC;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
+@Primary
 @Component
 public class CarMongoRepositoryAdapter implements CarRepository {
     private static final Logger log = Logger.getLogger(CarMongoRepositoryAdapter.class.getName());

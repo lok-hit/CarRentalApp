@@ -2,19 +2,22 @@ package domain;
 
 
 import car_rental_app.BaseIntegrationTest;
-import car_rental_app.adapter.out.persistence.CarRepositoryAdapter;
+import car_rental_app.adapter.out.CarMongoRepositoryAdapter;
 import car_rental_app.application.service.saga.ReservationSagaHandler;
 import car_rental_app.domain.model.*;
 import car_rental_app.domain.saga.event.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
 public class CarAvailabilityConsistencyTest extends BaseIntegrationTest {
 
     private Car car = new Car(
@@ -24,7 +27,7 @@ public class CarAvailabilityConsistencyTest extends BaseIntegrationTest {
     );
 
     @Autowired
-    CarRepositoryAdapter carRepository;
+    CarMongoRepositoryAdapter carRepository;
 
     @Autowired
     ReservationSagaHandler sagaHandler;
@@ -73,7 +76,7 @@ public class CarAvailabilityConsistencyTest extends BaseIntegrationTest {
 
     @Test
     void reservationCancelled_shouldMakeCarAvailable() {
-        sagaHandler.onReservationCancelled(new ReservationCancelledEvent("r1", car.id()));
+        sagaHandler.onReservationCancelled(new ReservationCancelledEvent("r1", car.id(), "u8", Instant.now()));
         Optional<Car> found = carRepository.findById(car.id());
         assertThat(found).isPresent();
         assertThat(found.get().status()).isEqualTo(AvailabilityStatus.AVAILABLE);

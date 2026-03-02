@@ -1,8 +1,11 @@
-package car_rental_app.domain.port;
+package domain.port;
 
 import car_rental_app.domain.model.CarId;
-import car_rental_app.domain.saga.event.ReservationCreatedEvent;
+import car_rental_app.domain.event.CarCreatedEvent;
+import car_rental_app.domain.port.OutboxEventStore;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -15,7 +18,7 @@ class OutboxEventStoreTest {
         };
 
         assertThatThrownBy(() ->
-                store.saveEvent("r1", new ReservationCreatedEvent("r1", new CarId("c1")))
+                store.saveEvent("c1", new CarCreatedEvent("c1", "SEDAN", BigDecimal.valueOf(1000)))
         ).isInstanceOf(UnsupportedOperationException.class);
     }
 }

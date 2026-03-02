@@ -1,7 +1,7 @@
 package domain;
 
 import car_rental_app.BaseIntegrationTest;
-import car_rental_app.adapter.out.persistence.CarRepositoryAdapter;
+import car_rental_app.adapter.out.CarMongoRepositoryAdapter;
 import car_rental_app.application.service.saga.ReservationSagaHandler;
 import car_rental_app.domain.model.*;
 import car_rental_app.application.port.CarCommandPort;
@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CarCommandPortRollbackIntegrationTest extends BaseIntegrationTest {
     @Autowired
-    CarRepositoryAdapter carRepository;
+    CarMongoRepositoryAdapter carRepository;
     @Autowired
     CarCommandPort carCommandPort;
     @Autowired
@@ -28,7 +28,7 @@ public class CarCommandPortRollbackIntegrationTest extends BaseIntegrationTest {
         Car car = new Car(new CarId("c1"), CarCategory.ELECTRIC, new Price(BigDecimal.valueOf(100.00)));
         carRepository.save(car);
 
-        PaymentFailedEvent event = new PaymentFailedEvent("r1", new CarId("c1"));
+        PaymentFailedEvent event = new PaymentFailedEvent("r1", new CarId("c1"), "u9");
 
         // when
 

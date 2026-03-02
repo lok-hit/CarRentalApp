@@ -17,12 +17,13 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = CarApplicationService.class)
+@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
 public class ReservationCancelledIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
@@ -40,7 +41,7 @@ public class ReservationCancelledIntegrationTest extends BaseIntegrationTest {
                         "org.apache.kafka.common.serialization.StringSerializer" )
         );
 
-        ReservationCancelledEvent event = new ReservationCancelledEvent("r1", new CarId("c1"));
+        ReservationCancelledEvent event = new ReservationCancelledEvent("r1", new CarId("c1"), "9", Instant.now());
         String json = new ObjectMapper().writeValueAsString(event);
         // when
         producer.send(new ProducerRecord<>("reservation-cancelled", json));

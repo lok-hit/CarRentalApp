@@ -2,8 +2,7 @@ package saga;
 
 import car_rental_app.BaseIntegrationTest;
 import car_rental_app.adapter.out.messaging.outbox.OutboxEventRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;import org.springframework.boot.test.context.SpringBootTest;
 import car_rental_app.domain.saga.event.PaymentCompletedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -21,7 +20,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
 public class PaymentCompletedIntegrationTest extends BaseIntegrationTest {
 
     @Autowired

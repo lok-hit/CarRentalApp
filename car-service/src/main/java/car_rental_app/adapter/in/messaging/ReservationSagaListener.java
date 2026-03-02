@@ -1,6 +1,8 @@
 package car_rental_app.adapter.in.messaging;
 
 import car_rental_app.application.service.saga.ReservationSagaHandler;
+import car_rental_app.domain.saga.event.PaymentCompletedEvent;
+import car_rental_app.domain.saga.event.PaymentConfirmedEvent;
 import car_rental_app.domain.saga.event.PaymentFailedEvent;
 import car_rental_app.domain.saga.event.ReservationCancelledEvent;
 import car_rental_app.domain.saga.event.ReservationCreatedEvent;
@@ -35,6 +37,19 @@ public class ReservationSagaListener {
     public void onReservationCancelled(ReservationCancelledEvent event) {
         log.info(() -> "[" + trace() + "] Kafka: ReservationCancelled car=" + event.carId());
         sagaHandler.onReservationCancelled(event);
+    }
+
+    @KafkaListener(topics = "payment-completed")
+    public void onPaymentCompleted(PaymentCompletedEvent event) {
+        log.info(() -> "[" + trace() + "] Kafka: PaymentCompleted car=" + event.carId());
+        // Convert PaymentCompletedEvent to PaymentConfirmedEvent
+        PaymentConfirmedEvent confirmedEvent = new PaymentConfirmedEvent(
+            event.reservationId(),
+            event.carId(),
+            event.userId(),
+            event.paymentStatus()
+        );
+        sagaHandler.onPaymentConfirmed(confirmedEvent);
     }
 
     @KafkaListener(topics = "payment-failed")
