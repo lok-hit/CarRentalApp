@@ -32,11 +32,23 @@ public class Car {
         domainEvents.add(new CarMarkedAsAvailableEvent(id.value()));
     }
 
+    /**
+     * Updates the car's price and appends a CarPriceChangedEvent to the domain event list.
+     *
+     * @param newPrice the new price for the car
+     */
     public void changePrice(Price newPrice) {
         this.price = newPrice;
         domainEvents.add(new CarPriceChangedEvent(id.value(), newPrice.value()));
     }
 
+    /**
+     * Provides and clears the car's queued domain events.
+     *
+     * Returns an immutable copy of the current domain events and clears the internal event list so subsequent calls will not return the same events.
+     *
+     * @return an immutable List of DomainEvent objects that were queued for this car
+     */
     public List<DomainEvent> drainDomainEvents() {
         List<DomainEvent> events = List.copyOf(domainEvents);
         domainEvents.clear();
@@ -44,6 +56,11 @@ public class Car {
     }
 
 
+    /**
+     * Retrieve the car's identifier.
+     *
+     * @return the CarId of this car
+     */
     public CarId id() {
         return id;
     }

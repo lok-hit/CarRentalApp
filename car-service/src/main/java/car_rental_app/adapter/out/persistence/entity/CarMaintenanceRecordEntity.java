@@ -20,6 +20,9 @@ public class CarMaintenanceRecordEntity {
     @JoinColumn(name = "car_id", nullable = false)
     private CarEntity car;
 
+    /**
+     * Protected no-argument constructor required by JPA for entity instantiation.
+     */
     protected CarMaintenanceRecordEntity() {
     }
 

@@ -32,6 +32,13 @@ public class CarApplicationService implements CarCommandPort {
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
+    /**
+     * Creates a CarApplicationService with the required dependencies.
+     *
+     * @param repository       repository for loading and saving Car aggregates
+     * @param eventPublisher   publisher for domain events
+     * @param reservationPolicy policy enforcing reservation constraints
+     */
     @Autowired
     public CarApplicationService(CarRepository repository, EventPublisher eventPublisher, ReservationPolicy reservationPolicy) {
         this.repository = repository;
@@ -62,6 +69,16 @@ public class CarApplicationService implements CarCommandPort {
         publishEvents(car);
     }
 
+    /**
+     * Marks the specified car as unavailable after validating reservation constraints.
+     *
+     * Loads the car identified by the command, enforces the reservation policy, persists the state change,
+     * and publishes any resulting domain events.
+     *
+     * @param cmd the command containing the id of the car to mark unavailable
+     * @throws IllegalArgumentException if no car exists with the provided id
+     * @throws CarReservationRejectedException if the reservation policy prevents marking the car unavailable
+     */
     @Override
     @Transactional
     public void handle(MarkCarAsUnavailableCommand cmd) {
@@ -81,6 +98,12 @@ public class CarApplicationService implements CarCommandPort {
     }
 
 
+    /**
+     * Processes a MarkCarAsAvailableCommand by marking the referenced car available, persisting the change, and publishing any domain events.
+     *
+     * @param cmd the command containing the identifier of the car to mark as available
+     * @throws IllegalArgumentException if no car with the given id exists
+     */
     @Override
     @Transactional
     public void handle(MarkCarAsAvailableCommand cmd) {
@@ -97,10 +120,20 @@ public class CarApplicationService implements CarCommandPort {
         log.info(() -> "[" + trace() + "] Car marked AVAILABLE id=" + cmd.id());
     }
 
+    /**
+     * Publishes and clears all domain events emitted by the given car aggregate to the application event publisher.
+     *
+     * @param car the Car aggregate whose drained domain events will be published
+     */
     private void publishEvents(Car car) {
         car.drainDomainEvents().forEach(applicationEventPublisher::publishEvent);
     }
 
+    /**
+     * Format MDC trace and span identifiers into a single string for logging.
+     *
+     * @return a string in the form "trace=<traceId|none> span=<spanId|none>" where missing identifiers are replaced with "none"
+     */
     private String trace() {
 
         String traceId = MDC.get("traceId");

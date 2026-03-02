@@ -33,6 +33,12 @@ public class CarQueryController {
         return "trace=" + MDC.get("traceId") + " span=" + MDC.get("spanId");
     }
 
+    /**
+     * Retrieves a car by its identifier.
+     *
+     * @param id the car identifier (must not be blank)
+     * @return a ResponseEntity containing the CarDto with HTTP 200 if found, or HTTP 404 if not found
+     */
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<CarDto> getById(@PathVariable @NotBlank String id) {
@@ -44,6 +50,11 @@ public class CarQueryController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    /**
+     * Retrieve all available cars.
+     *
+     * @return a ResponseEntity containing a list of CarDto representing the available cars
+     */
     @GetMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<List<CarDto>> getAvailable() {

@@ -8,6 +8,12 @@ import java.util.stream.Collectors;
 
 public class CarMapper {
 
+    /**
+     * Map a domain Car to a CarDto containing its identifier, category, price, and status.
+     *
+     * @param car the domain Car to convert
+     * @return a CarDto populated with the car's identifier, category name, price value, and status name
+     */
     public static CarDto toDto(Car car) {
         return new CarDto(
                 car.id().value(),
