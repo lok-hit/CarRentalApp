@@ -3,7 +3,7 @@ package car_rental_app.domain.saga.event;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ReservationConfirmedEvent implements DomainEvent{
+public class ReservationConfirmedEvent {
 
     private final String reservationId;
     private final String carId;

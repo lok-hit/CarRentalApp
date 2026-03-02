@@ -8,6 +8,7 @@ import org.slf4j.MDC;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
 @Component
@@ -21,25 +22,39 @@ public class KafkaSagaEventPublisher implements SagaEventPublisher {
     }
 
     @Override
-    public void publishReservationCreated(ReservationCreatedEvent event) {
+    public CompletableFuture<Boolean> publishReservationCreated(ReservationCreatedEvent event) {
 
         log.info(() -> prefix() + "Received ReservationCreatedEvent: " + event);
-        kafka.send("reservation-created", event.carId().value(), event);
+        try {
+            kafka.send("reservation-created", event.carId().value(), event);
+            return CompletableFuture.completedFuture(true);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     @Override
-    public void publishReservationCancelled(ReservationCancelledEvent event) {
+    public CompletableFuture<Boolean> publishReservationCancelled(ReservationCancelledEvent event) {
 
         log.info(()-> prefix() + "Received ReservationCancelledEvent" + event);
-        kafka.send("reservation-cancelled", event.carId().value(), event);
+        try {
+            kafka.send("reservation-cancelled", event.carId().value(), event);
+            return CompletableFuture.completedFuture(true);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     @Override
-    public void publishPaymentFailed(PaymentFailedEvent event) {
+    public CompletableFuture<Boolean> publishPaymentFailed(PaymentFailedEvent event) {
 
         log.info(()-> prefix() + "Received payment failed event" + event);
-        kafka.send("payment-failed", event.carId().value(), event);
-
+        try {
+            kafka.send("payment-failed", event.carId().value(), event);
+            return CompletableFuture.completedFuture(true);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     private String prefix() {

@@ -5,7 +5,7 @@ import car_rental_app.domain.model.CarId;
 import java.time.Instant;
 import java.util.Objects;
 
-public record ReservationCancelledEvent(String reservationId, CarId carId, String userId, Instant timestamp) implements DomainEvent {
+public record ReservationCancelledEvent(String reservationId, CarId carId, String userId, Instant timestamp) {
     public ReservationCancelledEvent {
         Objects.requireNonNull(reservationId, "reservationId cannot be null");
         Objects.requireNonNull(carId, "carId cannot be null");

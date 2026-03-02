@@ -28,8 +28,6 @@ public class ReservationSagaHandler {
         try {
             carCommandPort.handle(new MarkCarAsUnavailableCommand(event.getCarId()));
             log.info("[traceId={}] Car marked unavailable carId={}" + event.getCarId());
-            outboxEventStore.saveEvent(trace(), event);
-            log.info("[traceId={}] Outbox stored ReservationConfirmedEvent reservationId={}" + event.getReservationId());
             log.info("[traceId={}] Saga END: onReservationConfirmed OK reservationId={}" + event.getReservationId());
         } catch (Exception ex) {
             log.severe("[traceId={}] Saga ERROR onReservationConfirmed reservationId={}, error={}" + event.getReservationId() + ex.getMessage());
@@ -41,24 +39,18 @@ public class ReservationSagaHandler {
     public void onReservationCreated(ReservationCreatedEvent event) {
         log.info(() -> "[" + trace() + "] Saga: ReservationCreated car=" + event.carId());
         carCommandPort.handle(new MarkCarAsUnavailableCommand(event.carId().value()));
-
-        outboxEventStore.saveEvent(event.reservationId(), event);
     }
 
     @Transactional
     public void onReservationCancelled(ReservationCancelledEvent event) {
         log.info(() -> "[" + trace() + "] Saga: ReservationCancelled car=" + event.carId());
         carCommandPort.handle(new MarkCarAsAvailableCommand(event.carId()));
-
-        outboxEventStore.saveEvent(event.reservationId(), event);
     }
 
     @Transactional
     public void onReservationFailed(PaymentFailedEvent event) {
         log.info(() -> "[" + trace() + "] Saga: ReservationFailed car=" + event.carId());
         carCommandPort.handle(new MarkCarAsAvailableCommand(event.carId()));
-
-        outboxEventStore.saveEvent(event.reservationId(), event);
     }
 
     @Transactional
@@ -69,7 +61,6 @@ public class ReservationSagaHandler {
         try {
             carCommandPort.handle(new MarkCarAsUnavailableCommand(event.getCarId()));
             log.info("[traceId={}] Car marked unavailable carId={}");
-            log.info("[traceId={}] Outbox stored PaymentCompletedEvent reservationId={}");
             log.info("[traceId={}] Saga END: onPaymentCompleted OK reservationId={}");
         } catch (Exception ex) {
             log.severe("[traceId={}] Saga ERROR onPaymentCompleted reservationId={}, error={}" + ex);

@@ -1,6 +1,7 @@
 package car_rental_app.adapter.out;
 
 import car_rental_app.adapter.out.persistence.document.CarDocument;
+import car_rental_app.adapter.out.persistence.document.StatusDocument;
 import car_rental_app.adapter.out.persistence.mapper.CarMongoMapper;
 import car_rental_app.adapter.out.persistence.repository.CarMongoRepository;
 import car_rental_app.domain.model.AvailabilityStatus;
@@ -39,7 +40,7 @@ public class CarMongoRepositoryAdapter implements CarRepository {
     @Transactional(readOnly = true)
     public List<Car> findAvailable() {
         log.fine(() -> "[" + trace() + "] Mongo: findAvailable");
-        return mongo.findByStatus(AvailabilityStatus.AVAILABLE.name()).stream().map(CarMongoMapper::toDomain).toList();
+        return mongo.findByStatus(StatusDocument.AVAILABLE).stream().map(CarMongoMapper::toDomain).toList();
     }
 
     @Override
@@ -48,5 +49,12 @@ public class CarMongoRepositoryAdapter implements CarRepository {
         log.fine(() -> "[" + trace() + "] Mongo: save id=" + car.id().value());
         CarDocument saved = mongo.save(CarMongoMapper.toDocument(car));
         return CarMongoMapper.toDomain(saved);
+    }
+
+    @Override
+    @Transactional
+    public void DeleteAll() {
+        log.fine(() -> "[" + trace() + "] Mongo: DeleteAll");
+        mongo.deleteAll();
     }
 }
