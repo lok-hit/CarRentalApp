@@ -29,7 +29,7 @@ public class OutboxEventPublisherTest {
 
     @Test
     void shouldPublishPendingEventsAndMarkAsProcessed() {
-        OutboxEventDocument pending = new OutboxEventDocument("123", "r1", "ReservationCreatedEvent", "PROCESSED", Instant.now());
+        OutboxEventDocument pending = new OutboxEventDocument("123", "r1", "ReservationCreatedEvent", "PENDING", Instant.now());
         when(repository.findByStatus("PENDING")).thenReturn(List.of(pending));
         publisher.publishPendingEvents();
         verify(kafka).send("reservation-events", pending.getPayload());
