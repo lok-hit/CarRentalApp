@@ -33,8 +33,7 @@ logging:
     org.springframework.kafka: INFO
 
 kafka:
-  bootstrap-servers: localhost:9092
-
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
   topics:
     reservation-events: reservation.events
     payment-events: payment.events

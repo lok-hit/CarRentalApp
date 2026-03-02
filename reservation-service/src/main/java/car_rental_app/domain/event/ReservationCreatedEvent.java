@@ -1,43 +1,40 @@
 package car_rental_app.domain.event;
 
-import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Objects;
 
 public record ReservationCreatedEvent(
         String reservationId,
         String carId,
         String customerId,
-        String price,
-        String eventType
-) {
+        String eventType,
+        Instant occurredAt
+) implements DomainEvent {
+
     public ReservationCreatedEvent {
-        validateNonBlank(reservationId, "reservationId");
-        validateNonBlank(carId, "carId");
-        validateNonBlank(customerId, "customerId");
-        validateNonBlank(eventType, "eventType");
-        validatePrice(price);
+        reservationId = requireNotBlank(reservationId, "reservationId");
+        carId = requireNotBlank(carId, "carId");
+        customerId = requireNotBlank(customerId, "customerId");
+        eventType = requireNotBlank(eventType, "eventType");
+        occurredAt = Objects.requireNonNull(occurredAt, "occurredAt cannot be null");
     }
 
-    public ReservationCreatedEvent(String reservationId, String carId, String customerId, String price) {
-        this(reservationId, carId, customerId, price, "ReservationCreatedEvent");
+    public ReservationCreatedEvent(String reservationId, String carId, String customerId) {
+        this(
+                reservationId,
+                carId,
+                customerId,
+                "ReservationCreatedEvent",
+                Instant.now()
+        );
     }
 
-    private static void validateNonBlank(String value, String fieldName) {
+    private static String requireNotBlank(String value, String fieldName) {
         Objects.requireNonNull(value, fieldName + " cannot be null");
-        if (value.isBlank()) {
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
             throw new IllegalArgumentException(fieldName + " cannot be blank");
         }
-    }
-
-    private static void validatePrice(String price) {
-        Objects.requireNonNull(price, "price cannot be null");
-        try {
-            BigDecimal value = new BigDecimal(price);
-            if (value.compareTo(BigDecimal.ZERO) <= 0) {
-                throw new IllegalArgumentException("price must be greater than zero");
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("price must be a valid decimal number", e);
-        }
+        return trimmed;
     }
 }

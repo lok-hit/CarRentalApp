@@ -1,12 +1,14 @@
 package car_rental_app.application.service;
 
-import car_rental_app.domain.event.ReservationCreatedEvent;
+import car_rental_app.application.exception.*;
+import car_rental_app.domain.event.DomainEvent;
 import car_rental_app.domain.model.*;
 import car_rental_app.domain.port.EventPublisher;
 import car_rental_app.domain.port.ReservationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ReservationApplicationService {
@@ -27,46 +29,74 @@ public class ReservationApplicationService {
         this.policy = policy;
     }
 
+    @Transactional
     public ReservationId createReservation(
             CarId carId,
             CustomerId customerId,
             DateRange dateRange,
             Money price
     ) {
+        log.info("Creating reservation for carId={} customerId={}", carId.value(), customerId.value());
+
         policy.validate(dateRange);
 
         Reservation reservation = new Reservation(carId, customerId, dateRange, price);
 
         repository.save(reservation);
 
-        reservation.drainEvents().forEach(eventPublisher::publish);
-
-        log.info("Reservation created: {}", reservation.id().value());
+        publishDomainEvents(reservation);
 
         return reservation.id();
     }
 
+    @Transactional
     public void confirmReservation(String reservationId) {
+        log.info("Confirming reservation {}", reservationId);
+
         Reservation reservation = repository.findById(new ReservationId(reservationId));
+        if (reservation == null) {
+            throw new ReservationNotFoundException(reservationId);
+        }
+
+        if (reservation.isConfirmed()) {
+            throw new ReservationAlreadyConfirmedException(reservationId);
+        }
+
+        if (reservation.isCancelled()) {
+            throw new ReservationAlreadyCancelledException(reservationId);
+        }
 
         reservation.confirm();
 
         repository.save(reservation);
 
-        reservation.drainEvents().forEach(eventPublisher::publish);
-
-        log.info("Reservation confirmed: {}", reservationId);
+        publishDomainEvents(reservation);
     }
 
-    public void cancelReservation(String reservationId) {
-        Reservation reservation = repository.findById(new ReservationId(reservationId));
+    @Transactional
+    public void cancelReservation(String reservationId, String reason) {
+        log.info("Cancelling reservation {} with reason={}", reservationId, reason);
 
-        reservation.cancel("Cancelled due to failed payment");
+        Reservation reservation = repository.findById(new ReservationId(reservationId));
+        if (reservation == null) {
+            throw new ReservationNotFoundException(reservationId);
+        }
+
+        if (reservation.isCancelled()) {
+            throw new ReservationAlreadyCancelledException(reservationId);
+        }
+
+        reservation.cancel(reason);
 
         repository.save(reservation);
 
-        reservation.drainEvents().forEach(eventPublisher::publish);
+        publishDomainEvents(reservation);
+    }
 
-        log.info("Reservation cancelled: {}", reservationId);
+    private void publishDomainEvents(Reservation reservation) {
+        for (DomainEvent event : reservation.drainDomainEvents()) {
+            log.info("Publishing domain event {}", event.getClass().getSimpleName());
+            eventPublisher.publish(event);
+        }
     }
 }
