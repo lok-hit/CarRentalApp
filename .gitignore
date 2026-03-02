@@ -19,7 +19,7 @@
 .idea/**/dbnavigator.xml
 
 # IntelliJ generated files
-out/
+/out/
 
 ### Java ###
 *.class
@@ -32,7 +32,7 @@ out/
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
+### Package Files ###
 *.jar
 *.war
 *.nar
@@ -41,7 +41,7 @@ out/
 *.tar.gz
 *.rar
 
-# Virtual machine crash logs
+### JVM crash logs ###
 hs_err_pid*
 replay_pid*
 
@@ -70,7 +70,6 @@ logs/
 Thumbs.db
 
 ### Spring Boot ###
-# Embedded server logs
 *.pid
 
 ### Test output ###
@@ -87,7 +86,7 @@ coverage/
 .sonar/
 .scannerwork/
 
-### VS Code (jeśli ktoś używa) ###
+### VS Code ###
 .vscode/
 
 ### Docker ###
