@@ -1,0 +1,59 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: reservation-service
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/reservation
+    username: reservation
+    password: reservation
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [traceId=%X{traceId}, spanId=%X{spanId}] [%thread] %logger{36} - %msg%n"
+  level:
+    root: INFO
+    car_rental_app: DEBUG
+    org.apache.kafka: WARN
+    org.springframework.kafka: INFO
+
+kafka:
+  bootstrap-servers: localhost:9092
+
+  topics:
+    reservation-events: reservation.events
+    payment-events: payment.events
+
+spring.kafka:
+  consumer:
+    bootstrap-servers: ${kafka.bootstrap-servers}
+    group-id: reservation-service
+    auto-offset-reset: earliest
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  producer:
+    bootstrap-servers: ${kafka.bootstrap-servers}
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+outbox:
+  enabled: true
+  table-name: outbox_event
+  poll-interval-ms: 500
+  batch-size: 50

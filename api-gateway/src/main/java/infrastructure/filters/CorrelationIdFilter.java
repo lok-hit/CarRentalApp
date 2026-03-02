@@ -1,33 +1,53 @@
-package infrastructure.filters;
+package car_rental_app.gateway.filter;
 
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
-import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
 @Component
-public class CorrelationIdFilter implements WebFilter {
+public class CorrelationIdFilter implements GlobalFilter, Ordered {
+
+    private static final String TRACE_ID = "X-Trace-Id";
+    private static final String SPAN_ID = "X-Span-Id";
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+    public Mono<Void> filter(ServerWebExchange exchange, org.springframework.cloud.gateway.filter.GatewayFilterChain chain) {
 
-        String correlationId = exchange.getRequest().getHeaders().getFirst("X-Correlation-ID");
+        ServerHttpRequest request = exchange.getRequest();
 
-        if (correlationId == null) {
-            correlationId = java.util.UUID.randomUUID().toString();
+        String traceId = request.getHeaders().getFirst(TRACE_ID);
+        String spanId = request.getHeaders().getFirst(SPAN_ID);
+
+        if (traceId == null || traceId.isBlank()) {
+            traceId = UUID.randomUUID().toString();
+        }
+        if (spanId == null || spanId.isBlank()) {
+            spanId = UUID.randomUUID().toString();
         }
 
-        exchange.getResponse().getHeaders().add("X-Correlation-ID", correlationId);
+        MDC.put("traceId", traceId);
+        MDC.put("spanId", spanId);
 
-        String finalCorrelationId = correlationId;
+        ServerHttpRequest mutated = request.mutate()
+                .header(TRACE_ID, traceId)
+                .header(SPAN_ID, spanId)
+                .build();
 
-        return chain.filter(exchange)
-                .contextWrite(ctx -> ctx.put("correlationId", finalCorrelationId));
+        return chain.filter(exchange.mutate().request(mutated).build())
+                .doFinally(signal -> {
+                    MDC.remove("traceId");
+                    MDC.remove("spanId");
+                });
+    }
+
+    @Override
+    public int getOrder() {
+        return -1;
     }
 }
