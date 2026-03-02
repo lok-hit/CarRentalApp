@@ -14,12 +14,28 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 @Configuration
 public class SecurityConfig {
 
+    /**
+     * Provides a JwtDecoder bean configured to use the local JWKS endpoint for testing.
+     *
+     * @return a JwtDecoder that decodes JWTs using the JWKS at http://localhost:8080/.well-known/jwks.json
+     */
     @Bean
     public JwtDecoder jwtDecoder() {
         // For testing purposes - create a mock JWT decoder
         return NimbusJwtDecoder.withJwkSetUri("http://localhost:8080/.well-known/jwks.json").build();
     }
 
+    /**
+     * Configures HTTP security for the application and returns the resulting filter chain.
+     *
+     * Configures CSRF protection as disabled, enforces stateless session management, permits
+     * unauthenticated access to "/actuator/**" and requires authentication for all other requests.
+     * Configures the OAuth2 resource server to validate JWTs and maps the `roles` JWT claim to
+     * authorities prefixed with `ROLE_` via a JwtAuthenticationConverter.
+     *
+     * @param http the HttpSecurity builder to configure
+     * @return the configured SecurityFilterChain
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 

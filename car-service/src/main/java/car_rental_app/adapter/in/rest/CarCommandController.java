@@ -27,6 +27,11 @@ public class CarCommandController {
         this.commandPort = commandPort;
     }
 
+    /**
+     * Creates a new car from the given creation command.
+     *
+     * @param cmd the command containing the new car's identifier and attributes
+     */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public void create(@Valid @RequestBody CreateCarCommand cmd) {
@@ -34,6 +39,13 @@ public class CarCommandController {
         commandPort.handle(cmd);
     }
 
+    /**
+     * Validates that the path car id matches the id in the request body and forwards a change-price command.
+     *
+     * @param id  the car identifier from the request path
+     * @param cmd the change-price command containing the target car id and new price
+     * @throws IllegalArgumentException if the path `id` does not equal `cmd.id()`
+     */
     @PutMapping("/{id}/price")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public void changePrice(@PathVariable @NotBlank String id, @RequestBody ChangeCarPriceCommand cmd) {
@@ -51,6 +63,11 @@ public class CarCommandController {
         commandPort.handle(new MarkCarAsAvailableCommand(new CarId(id)));
     }
 
+    /**
+     * Marks the car identified by the given id as unavailable.
+     *
+     * @param id the car identifier (must not be blank)
+     */
     @PostMapping("/{id}/unavailable")
     @PreAuthorize("hasRole('OPS')")
     public void markUnavailable(@NotBlank @PathVariable String id) {
@@ -58,6 +75,11 @@ public class CarCommandController {
         commandPort.handle(new MarkCarAsUnavailableCommand(new CarId(id).value()));
     }
 
+    /**
+     * Builds a single-line log context string containing the MDC trace and span identifiers.
+     *
+     * @return the formatted string "trace=&lt;traceId&gt; span=&lt;spanId&gt;" where &lt;traceId&gt; and &lt;spanId&gt; are the values read from MDC keys "traceId" and "spanId"
+     */
     private String trace() {
         return "trace=" + MDC.get("traceId") + " span=" + MDC.get("spanId");
     }

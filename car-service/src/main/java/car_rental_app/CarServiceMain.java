@@ -8,6 +8,11 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
 public class CarServiceMain {
 
+    /**
+     * Bootstrap the CarServiceMain Spring Boot application.
+     *
+     * @param args command-line arguments passed through to the Spring application
+     */
     public static void main(String [] args){
 
         SpringApplication.run(CarServiceMain.class, args);

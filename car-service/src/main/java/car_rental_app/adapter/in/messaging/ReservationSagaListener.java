@@ -21,6 +21,15 @@ public class ReservationSagaListener {
     private final ReservationSagaHandler sagaHandler;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Create a ReservationSagaListener and configure its JSON deserialization support.
+     *
+     * Initializes the listener with the provided saga handler and prepares an ObjectMapper
+     * (registering the JavaTimeModule and auto-registering available modules) for parsing
+     * incoming saga event JSON.
+     *
+     * @param sagaHandler the handler that processes saga events received by this listener
+     */
     @Autowired
     public ReservationSagaListener(ReservationSagaHandler sagaHandler) {
         this.sagaHandler = sagaHandler;
@@ -29,10 +38,26 @@ public class ReservationSagaListener {
         this.objectMapper.findAndRegisterModules();
     }
 
+    /**
+     * Builds a compact trace identifier string from the MDC context.
+     *
+     * <p>The returned string has the form "trace=&lt;traceId&gt; span=&lt;spanId&gt;". If either
+     * MDC entry is absent, its place in the string will be `null`.</p>
+     *
+     * @return the formatted trace string containing `traceId` and `spanId`
+     */
     private String trace() {
         return "trace=" + MDC.get("traceId") + " span=" + MDC.get("spanId");
     }
 
+    /**
+     * Handles a reservation-created Kafka message by parsing the JSON and delegating the resulting event to the saga handler.
+     *
+     * Parses the given JSON into a ReservationCreatedEvent, logs receipt with trace information, and invokes sagaHandler.onReservationCreated(...).
+     * If processing fails the method logs a severe error and does not rethrow the exception.
+     *
+     * @param json the raw JSON payload of a ReservationCreatedEvent
+     */
     @KafkaListener(topics = "reservation-created")
     public void onReservationCreated(String json) {
         try {
@@ -44,6 +69,11 @@ public class ReservationSagaListener {
         }
     }
 
+    /**
+     * Processes a "reservation-cancelled" Kafka message by deserializing the JSON payload into a ReservationCancelledEvent and handling the reservation cancellation.
+     *
+     * @param json JSON payload representing a ReservationCancelledEvent (expected structure matches {@code ReservationCancelledEvent})
+     */
     @KafkaListener(topics = "reservation-cancelled")
     public void onReservationCancelled(String json) {
         try {
@@ -55,6 +85,14 @@ public class ReservationSagaListener {
         }
     }
 
+    /**
+     * Handle a Kafka "payment-completed" message by parsing the provided JSON into a PaymentCompletedEvent,
+     * converting it into a PaymentConfirmedEvent, and forwarding it to the reservation saga handler.
+     *
+     * If parsing or processing fails, the error is logged.
+     *
+     * @param json the raw JSON payload from the "payment-completed" topic representing a PaymentCompletedEvent
+     */
     @KafkaListener(topics = "payment-completed")
     public void onPaymentCompleted(String json) {
         log.info("Received PaymentCompleted JSON: " + json);
@@ -78,6 +116,13 @@ public class ReservationSagaListener {
         }
     }
 
+    /**
+     * Parses a PaymentFailedEvent from the provided JSON, logs the event, and triggers reservation failure handling.
+     *
+     * If parsing or processing fails, a severe error message is logged.
+     *
+     * @param json JSON payload representing a PaymentFailedEvent
+     */
     @KafkaListener(topics = "payment-failed")
     public void onPaymentFailed(String json) {
         try {

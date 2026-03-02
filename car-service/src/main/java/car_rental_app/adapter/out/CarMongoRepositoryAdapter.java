@@ -38,6 +38,11 @@ public class CarMongoRepositoryAdapter implements CarRepository {
         return mongo.findById(id.value()).map(CarMongoMapper::toDomain);
     }
 
+    /**
+     * Get all cars that are currently available.
+     *
+     * @return a list of domain Car objects with status AVAILABLE; an empty list if none are found
+     */
     @Override
     @Transactional(readOnly = true)
     public List<Car> findAvailable() {
@@ -45,6 +50,12 @@ public class CarMongoRepositoryAdapter implements CarRepository {
         return mongo.findByStatus(StatusDocument.AVAILABLE).stream().map(CarMongoMapper::toDomain).toList();
     }
 
+    /**
+     * Persist the given Car to MongoDB and return the persisted entity.
+     *
+     * @param car the domain Car to persist
+     * @return the persisted Car reflecting any datastore-applied changes (for example generated ids or timestamps)
+     */
     @Override
     @Transactional
     public Car save(Car car) {
@@ -53,6 +64,11 @@ public class CarMongoRepositoryAdapter implements CarRepository {
         return CarMongoMapper.toDomain(saved);
     }
 
+    /**
+     * Removes all car records from the underlying Mongo repository.
+     *
+     * This operation executes within a transaction and deletes every Car document managed by the repository.
+     */
     @Override
     @Transactional
     public void DeleteAll() {
