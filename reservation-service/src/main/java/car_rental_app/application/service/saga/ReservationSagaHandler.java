@@ -19,13 +19,13 @@ public class ReservationSagaHandler {
     }
 
     public void handlePaymentCompleted(PaymentCompletedEvent event) {
-        log.info("💰 Saga: Payment completed for reservationId={}", event.getReservationId());
-        reservationService.confirmReservation(event.getReservationId());
+        log.info("💰 Saga: Payment completed for reservationId={}", event.reservationId());
+        reservationService.confirmReservation(event.reservationId());
     }
 
     public void handlePaymentFailed(PaymentFailedEvent event) {
         log.info("💸 Saga: Payment failed for reservationId={}, reason={}",
-                event.getReservationId(), event.getReason());
-        reservationService.cancelReservation(event.getReservationId());
+                event.reservationId(), event.reason());
+        reservationService.cancelReservation(event.reservationId());
     }
 }
