@@ -1,10 +1,10 @@
-package car_rental_app.application.command;
+package car_rental_app.adapter.in.web.dto;
 
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record CreateReservationCommand(
+public record CreateReservationRequest(
 
         @NotBlank
         @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "carId contains invalid characters")
@@ -16,18 +16,17 @@ public record CreateReservationCommand(
 
         @NotNull
         @FutureOrPresent
-        LocalDate from,
+        LocalDate startDate,
 
         @NotNull
         @Future
-        LocalDate to,
+        LocalDate endDate,
 
         @NotNull
         @Positive
-        BigDecimal price,
+        BigDecimal priceAmount,
 
         @NotBlank
-        @Pattern(regexp = "^[A-Z]{3}$", message = "currency must be ISO 4217 (e.g. PLN, EUR, USD)")
-        String currency
-
+        @Pattern(regexp = "^[A-Z]{3}$", message = "priceCurrency must be ISO 4217 (e.g. USD, EUR)")
+        String priceCurrency
 ) {}

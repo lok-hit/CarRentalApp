@@ -47,6 +47,11 @@ public class CarRepositoryAdapter implements CarRepository {
     }
 
     @Override
+    public void DeleteAll() {
+        jpa.deleteAll();
+    }
+
+    @Override
     @Transactional
     public Car save(Car car) {
         log.fine(() -> "[" + trace() + "] JPA: save id=" + car.id().value());

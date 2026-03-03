@@ -20,7 +20,7 @@ public class ReservationQueryHandler {
 
     public ReservationView handle(GetReservationQuery query) {
         log.info("QueryHandler: get reservation {}", query.reservationId());
-        return queryService.getReservation(query);
+        return queryService.getReservationDetails(query.reservationId());
     }
 
     public List<ReservationListItem> handle(ListReservationsByCustomerQuery query) {
