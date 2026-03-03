@@ -1,26 +1,40 @@
 package car_rental_app.domain.event;
 
+import java.time.Instant;
 import java.util.Objects;
 
 public record PaymentFailedEvent(
         String reservationId,
         String paymentId,
         String reason,
-        String eventType
-) {
-    public PaymentFailedEvent {
-        Objects.requireNonNull(reservationId, "reservationId cannot be null");
-        Objects.requireNonNull(paymentId, "paymentId cannot be null");
-        Objects.requireNonNull(reason, "reason cannot be null");
-        Objects.requireNonNull(eventType, "eventType cannot be null");
+        String eventType,
+        Instant occurredAt
+) implements DomainEvent {
 
-        if (reservationId.isBlank()) throw new IllegalArgumentException("reservationId cannot be blank");
-        if (paymentId.isBlank()) throw new IllegalArgumentException("paymentId cannot be blank");
-        if (reason.isBlank()) throw new IllegalArgumentException("reason cannot be blank");
-        if (eventType.isBlank()) throw new IllegalArgumentException("eventType cannot be blank");
+    public PaymentFailedEvent {
+        reservationId = requireNotBlank(reservationId, "reservationId");
+        paymentId = requireNotBlank(paymentId, "paymentId");
+        reason = requireNotBlank(reason, "reason");
+        eventType = requireNotBlank(eventType, "eventType");
+        occurredAt = Objects.requireNonNull(occurredAt, "occurredAt cannot be null");
     }
 
     public PaymentFailedEvent(String reservationId, String paymentId, String reason) {
-        this(reservationId, paymentId, reason, "PaymentFailedEvent");
+        this(
+                reservationId,
+                paymentId,
+                reason,
+                "PaymentFailedEvent",
+                Instant.now()
+        );
+    }
+
+    private static String requireNotBlank(String value, String fieldName) {
+        Objects.requireNonNull(value, fieldName + " cannot be null");
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " cannot be blank");
+        }
+        return trimmed;
     }
 }
