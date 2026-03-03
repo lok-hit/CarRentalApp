@@ -1,5 +1,6 @@
 package car_rental_app.application.handler;
 
+import car_rental_app.adapter.in.web.dto.ReservationDetailsResponse;
 import car_rental_app.application.query.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +19,13 @@ public class ReservationQueryHandler {
         this.queryService = queryService;
     }
 
-    public ReservationView handle(GetReservationQuery query) {
+    public ReservationDetailsResponse handle(GetReservationQuery query) {
         log.info("QueryHandler: get reservation {}", query.reservationId());
         return queryService.getReservationDetails(query.reservationId());
     }
 
-    public List<ReservationListItem> handle(ListReservationsByCustomerQuery query) {
+    public List<ReservationDetailsResponse> handle(ListReservationsByCustomerQuery query) {
         log.info("QueryHandler: list reservations for customer {}", query.customerId());
-        return queryService.listByCustomer(query);
+        return queryService.listReservationsForCustomer(query.customerId());
     }
 }
