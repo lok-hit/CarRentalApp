@@ -40,9 +40,8 @@ public class ReservationQueryServiceImpl implements ReservationQueryService {
                 r.dateRange().from(),
                 r.dateRange().to(),
                 r.price().amount(),
-                r.price().currencyCode(),
+                r.price().currency().getCurrencyCode(),
                 r.status().name()
         );
     }
-
 }
