@@ -1,10 +1,12 @@
 package car_rental_app.application.query;
 
+import car_rental_app.adapter.in.web.dto.ReservationDetailsResponse;
+
 import java.util.List;
 
 public interface ReservationQueryService {
 
-    ReservationView getReservation(GetReservationQuery query);
+    ReservationDetailsResponse getReservationDetails(String reservationId);
 
-    List<ReservationListItem> listByCustomer(ListReservationsByCustomerQuery query);
+    List<ReservationDetailsResponse> listReservationsForCustomer(String customerId);
 }
