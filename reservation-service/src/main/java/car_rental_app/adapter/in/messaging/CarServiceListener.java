@@ -41,7 +41,7 @@ public class CarServiceListener {
                 case "CarCreatedEvent" -> {
                     validateCarCreated(json);
                     CarCreatedEvent event = mapper.treeToValue(json, CarCreatedEvent.class);
-                    sagaHandler.(event);
+                    sagaHandler.handleCarCreated(event);
                 }
 
                 case "CarMarkedAsAvailableEvent" -> {

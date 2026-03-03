@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ReservationSagaHandler {
 
@@ -44,7 +46,7 @@ public class ReservationSagaHandler {
 
     public void handleCarUnavailable(CarMarkedAsUnavailableEvent event) {
         log.warn("Car {} marked as unavailable. Reason: {}", event.carId(), event.reason());
-        List<Reservation> active = reservationRepo.findActiveByCarId(event.carId());
+        List<Reservation> active = reservationRepository.findActiveByCarId(event.carId());
         for (Reservation r : active) {
             log.warn("Cancelling reservation {} because car {} is unavailable", r.id().value(), event.carId());
             reservationService.cancelDueToCarUnavailable(r.id().value(), event.reason());
