@@ -55,7 +55,7 @@ public class CarMongoRepositoryAdapter implements CarRepository {
 
     @Override
     @Transactional
-    public void DeleteAll() {
+    public void deleteAll() {
         log.fine(() -> "[" + trace() + "] Mongo: DeleteAll");
         mongo.deleteAll();
     }

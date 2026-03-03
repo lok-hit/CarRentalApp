@@ -93,6 +93,22 @@ public class ReservationApplicationService {
         publishDomainEvents(reservation);
     }
 
+    public void markCarAsAvailable(String carId) {
+        log.info("Car {} is available again. No pending reservations to update.", carId);
+    }
+
+    public void cancelDueToCarUnavailable(String reservationId, String reason) {
+        Reservation r = repository.findById(new ReservationId(reservationId));
+
+        if (r == null ){
+            log.error("Reservation not found" + reservationId);
+            throw new ReservationNotFoundException("not found");
+        }
+        r.cancel("Car unavailable: " + reason);
+        repository.save(r);
+        log.warn("Reservation {} cancelled due to car unavailability", reservationId);
+    }
+
     private void publishDomainEvents(Reservation reservation) {
         for (DomainEvent event : reservation.drainDomainEvents()) {
             log.info("Publishing domain event {}", event.getClass().getSimpleName());

@@ -47,7 +47,10 @@ public class CarRepositoryAdapter implements CarRepository {
     }
 
     @Override
-    public void DeleteAll() {
+    @Transactional
+    public void deleteAll() {
+
+        log.fine(() -> "[" + trace() + "] JPA: deleteAll");
         jpa.deleteAll();
     }
 
