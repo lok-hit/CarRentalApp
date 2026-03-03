@@ -20,21 +20,42 @@ public class KafkaConfig {
         return new DefaultKafkaProducerFactory<>(Map.of(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092", ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class, ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class));
     }
 
+    /**
+     * Create a KafkaTemplate for sending messages with String keys and Object values.
+     *
+     * @return a KafkaTemplate configured to send messages with String keys and Object values
+     */
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
+    /**
+     * Creates a Kafka ProducerFactory configured to connect to localhost:9092 using String serialization for keys and values.
+     *
+     * @return a ProducerFactory that produces String-keyed, String-valued Kafka producers configured with bootstrap server localhost:9092
+     */
     @Bean
     public ProducerFactory<String, String> stringProducerFactory() {
         return new DefaultKafkaProducerFactory<>(Map.of(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092", ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class, ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class));
     }
 
+    /**
+     * Creates a KafkaTemplate for sending messages with String keys and String values.
+     *
+     * @return the KafkaTemplate configured for String keys and String values
+     */
     @Bean
     public KafkaTemplate<String, String> stringKafkaTemplate() {
         return new KafkaTemplate<>(stringProducerFactory());
     }
 
+    /**
+     * Create a Kafka consumer factory preconfigured for the "car-service" group and localhost:9092 bootstrap server.
+     *
+     * @return a ConsumerFactory that produces consumers using String key and value deserializers, group id "car-service",
+     *         bootstrap server "localhost:9092", and auto offset reset set to "earliest"
+     */
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
         return new DefaultKafkaConsumerFactory<>(Map.of(
@@ -46,6 +67,11 @@ public class KafkaConfig {
         ));
     }
 
+    /**
+     * Creates a ConcurrentKafkaListenerContainerFactory configured to use the consumerFactory defined in this configuration.
+     *
+     * @return a ConcurrentKafkaListenerContainerFactory wired to the local consumerFactory
+     */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
@@ -53,6 +79,13 @@ public class KafkaConfig {
         return factory;
     }
 
+    /**
+     * Create a ConsumerFactory configured to consume JSON-serialized message values with String keys.
+     *
+     * @return a ConsumerFactory<String, Object> using StringDeserializer for keys, JsonDeserializer for values,
+     *         connecting to localhost:9092, using group id "car-service", auto offset reset "earliest",
+     *         and configured to trust all packages for JSON deserialization.
+     */
     @Bean
     public ConsumerFactory<String, Object> jsonConsumerFactory() {
         return new DefaultKafkaConsumerFactory<>(Map.of(
@@ -65,6 +98,11 @@ public class KafkaConfig {
         ));
     }
 
+    /**
+     * Creates a listener container factory configured to consume messages with String keys and JSON-deserialized Object values.
+     *
+     * @return a ConcurrentKafkaListenerContainerFactory that produces listener containers for String-keyed, JSON-deserialized Object messages
+     */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Object> jsonKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();

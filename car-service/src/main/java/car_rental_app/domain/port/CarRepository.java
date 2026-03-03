@@ -9,7 +9,13 @@ import java.util.Optional;
 public interface CarRepository {
     Car save(Car car);
 
-    Optional<Car> findById(CarId id);
+    /**
+ * Retrieve a car by its identifier.
+ *
+ * @param id the identifier of the car to retrieve
+ * @return an Optional containing the matching Car if found, otherwise an empty Optional
+ */
+Optional<Car> findById(CarId id);
 
     List<Car> findAvailable();
     void deleteAll();

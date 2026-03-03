@@ -18,11 +18,19 @@ public class ReservationSagaHandler {
     private final CarCommandPort carCommandPort;
     private final OutboxEventStore outboxEventStore;
 
+    /**
+     * Create a ReservationSagaHandler using the given car command port and outbox event store.
+     */
     public ReservationSagaHandler(CarCommandPort carCommandPort, OutboxEventStore outboxEventStore) {
         this.carCommandPort = carCommandPort;
         this.outboxEventStore = outboxEventStore;
     }
 
+    /**
+     * Handles a ReservationConfirmedEvent by marking the associated car as unavailable and logging saga completion.
+     *
+     * @param event the confirmed reservation event containing the reservation and car identifiers
+     */
     @Transactional
     public void onReservationConfirmed(ReservationConfirmedEvent event) {
         try {
@@ -35,24 +43,48 @@ public class ReservationSagaHandler {
         }
     }
 
+    /**
+     * Handles a reservation creation by marking the associated car as unavailable.
+     *
+     * @param event the ReservationCreatedEvent containing the reservation and car identifiers
+     */
     @Transactional
     public void onReservationCreated(ReservationCreatedEvent event) {
         log.info(() -> "[" + trace() + "] Saga: ReservationCreated car=" + event.carId());
         carCommandPort.handle(new MarkCarAsUnavailableCommand(event.carId().value()));
     }
 
+    /**
+     * Handles a reservation cancellation by marking the associated car as available.
+     *
+     * Sends a MarkCarAsAvailableCommand for the car referenced in the provided event.
+     *
+     * @param event the reservation cancellation event containing the carId to be marked available
+     */
     @Transactional
     public void onReservationCancelled(ReservationCancelledEvent event) {
         log.info(() -> "[" + trace() + "] Saga: ReservationCancelled car=" + event.carId());
         carCommandPort.handle(new MarkCarAsAvailableCommand(event.carId()));
     }
 
+    /**
+     * Handles a reservation failure by marking the associated car as available.
+     *
+     * Sends a MarkCarAsAvailableCommand for the car referenced by the event.
+     *
+     * @param event the payment-failed event containing the reservation and car identifier
+     */
     @Transactional
     public void onReservationFailed(PaymentFailedEvent event) {
         log.info(() -> "[" + trace() + "] Saga: ReservationFailed car=" + event.carId());
         carCommandPort.handle(new MarkCarAsAvailableCommand(event.carId()));
     }
 
+    /**
+     * Handles a confirmed payment by marking the associated car unavailable and persisting a ReservationConfirmedEvent to the outbox.
+     *
+     * @param event the PaymentConfirmedEvent containing the reservationId, carId, and userId used to mark the car and create the outbox event
+     */
     @Transactional
     public void onPaymentConfirmed(PaymentConfirmedEvent event) {
         String traceId = MDC.get("traceId");
@@ -78,6 +110,11 @@ public class ReservationSagaHandler {
         }
     }
 
+    /**
+     * Builds a formatted trace string from the MDC trace and span identifiers.
+     *
+     * @return the formatted string "trace=<traceId> span=<spanId>" where missing values are replaced with "none"
+     */
     private String trace() {
         String traceId = MDC.get("traceId");
         String spanId = MDC.get("spanId");

@@ -6,7 +6,12 @@ import car_rental_app.domain.saga.event.ReservationCreatedEvent;
 
 
 public interface ReservationEventsPort {
-    void onReservationCreated(ReservationCreatedEvent event);
+    /**
+ * Processes a reservation-created event.
+ *
+ * @param event the ReservationCreatedEvent containing the reservation details to process
+ */
+void onReservationCreated(ReservationCreatedEvent event);
 
     void onReservationCancelled(ReservationCancelledEvent event);
 
