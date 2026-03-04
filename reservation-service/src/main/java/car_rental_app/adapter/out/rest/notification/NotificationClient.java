@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Instant;
+
 @Component
 public class NotificationClient {
 
@@ -34,9 +36,11 @@ public class NotificationClient {
             log.info("Fire-and-forget: sent reservation-confirmed for {}", request.reservationId());
         } catch (Exception e) {
             log.error("Fire-and-forget FAILED for reservation-cancelled {}", request.reservationId(), e);
-            outbox.save(new NotificationOutboxEntry(request.reservationId(), request.customerId(),
-                    request.email(), request.reason(), "RESERVATION_CANCELLED",
-                    request.timestamp(), e.getMessage()));
+            NotificationOutboxEntry entry = new NotificationOutboxEntry(null, request.reservationId(),
+                    request.customerId(), request.email(), request.reason(),
+                    "RESERVATION_CANCELLED", request.timestamp(), 0,
+                    e.getMessage(), Instant.now().plusSeconds(10));
+            outbox.save(entry);
         }
     }
 
@@ -49,9 +53,11 @@ public class NotificationClient {
             log.info("Fire-and-forget: sent reservation-cancelled for {}", request.reservationId());
         } catch (Exception e) {
             log.error("Fire-and-forget FAILED for reservation-confirmed {}", request.reservationId(), e);
-            outbox.save(new NotificationOutboxEntry(request.reservationId(), request.customerId(),
-                    request.email(), request.reason(), "RESERVATION_CONFIRMED",
-                    request.timestamp(), e.getMessage()));
+            NotificationOutboxEntry entry = new NotificationOutboxEntry(null, request.reservationId(),
+                    request.customerId(), request.email(), request.reason(),
+                    "RESERVATION_CONFIRMED", request.timestamp(), 0,
+                    e.getMessage(), Instant.now().plusSeconds(10));
+            outbox.save(entry);
         }
     }
 }

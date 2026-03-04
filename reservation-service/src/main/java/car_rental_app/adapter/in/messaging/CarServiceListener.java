@@ -1,6 +1,6 @@
 package car_rental_app.adapter.in.messaging;
 
-import car_rental_app.adapter.in.messaging.validation.EventValidator;
+
 import car_rental_app.application.service.saga.ReservationSagaHandler;
 import car_rental_app.domain.event.*;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,6 +17,8 @@ public class CarServiceListener {
 
     private final ObjectMapper mapper;
     private final ReservationSagaHandler sagaHandler;
+
+    private static final String carId ="carId";
 
     public CarServiceListener(ObjectMapper mapper, ReservationSagaHandler sagaHandler) {
         this.mapper = mapper;
@@ -65,19 +67,19 @@ public class CarServiceListener {
     }
 
     private void validateCarCreated(JsonNode json) {
-        EventValidator.requireText(json, "carId");
+        car_rental_app.adapter.in.messaging.EventValidator.requireText(json, carId);
         EventValidator.requireText(json, "brand");
         EventValidator.requireText(json, "model");
         EventValidator.requireTimestamp(json, "createdAt");
     }
 
     private void validateCarAvailable(JsonNode json) {
-        EventValidator.requireText(json, "carId");
+        EventValidator.requireText(json, carId);
         EventValidator.requireTimestamp(json, "timestamp");
     }
 
     private void validateCarUnavailable(JsonNode json) {
-        EventValidator.requireText(json, "carId");
+        EventValidator.requireText(json, carId);
         EventValidator.requireText(json, "reason");
         EventValidator.requireTimestamp(json, "timestamp");
     }

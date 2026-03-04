@@ -4,8 +4,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
-@Document("notification_outbox")
-public record NotificationOutboxEntry(
+@Document("notification_dead_letter")
+public record NotificationDeadLetterEntry(
         String id,
         String reservationId,
         String customerId,
@@ -15,6 +15,6 @@ public record NotificationOutboxEntry(
         Instant timestamp,
         int retryCount,
         String lastError,
-        Instant nextAttemptAt
+        Instant failedAt
 ) {}
 
