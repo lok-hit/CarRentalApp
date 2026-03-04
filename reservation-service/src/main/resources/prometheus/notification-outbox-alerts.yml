@@ -1,0 +1,39 @@
+groups:
+  - name: notification-outbox-alerts
+    rules:
+
+      - alert: NotificationOutboxGrowing
+        expr: notification_outbox_size > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Outbox size is growing"
+          description: "Outbox contains {{ $value }} pending notifications. Notification service may be down or slow."
+
+      - alert: NotificationOutboxNoSuccess
+        expr: increase(notification_outbox_success_total[10m]) == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No successful notification deliveries"
+          description: "No notifications have been successfully delivered in the last 10 minutes."
+
+      - alert: NotificationDeadLetterSpike
+        expr: increase(notification_outbox_dead_letter_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Dead letter queue is receiving entries"
+          description: "Some notifications are permanently failing and being moved to the dead letter queue."
+
+      - alert: NotificationOutboxHighRetryRate
+        expr: rate(notification_outbox_retry_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High retry rate"
+          description: "Notifications are being retried too frequently. Check notification-service availability."

@@ -18,7 +18,7 @@ public class CarServiceListener {
     private final ObjectMapper mapper;
     private final ReservationSagaHandler sagaHandler;
 
-    private static final String carId ="carId";
+    private static final String CAR_ID ="carId";
 
     public CarServiceListener(ObjectMapper mapper, ReservationSagaHandler sagaHandler) {
         this.mapper = mapper;
@@ -67,19 +67,19 @@ public class CarServiceListener {
     }
 
     private void validateCarCreated(JsonNode json) {
-        car_rental_app.adapter.in.messaging.EventValidator.requireText(json, carId);
+        car_rental_app.adapter.in.messaging.EventValidator.requireText(json, CAR_ID);
         EventValidator.requireText(json, "brand");
         EventValidator.requireText(json, "model");
         EventValidator.requireTimestamp(json, "createdAt");
     }
 
     private void validateCarAvailable(JsonNode json) {
-        EventValidator.requireText(json, carId);
+        EventValidator.requireText(json, CAR_ID);
         EventValidator.requireTimestamp(json, "timestamp");
     }
 
     private void validateCarUnavailable(JsonNode json) {
-        EventValidator.requireText(json, carId);
+        EventValidator.requireText(json, CAR_ID);
         EventValidator.requireText(json, "reason");
         EventValidator.requireTimestamp(json, "timestamp");
     }

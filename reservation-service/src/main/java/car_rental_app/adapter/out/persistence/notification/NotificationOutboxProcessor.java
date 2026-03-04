@@ -42,13 +42,15 @@ public class NotificationOutboxProcessor {
 
         for (NotificationOutboxEntry entry : entries) {
 
-            if (entry.retryCount() >= MAX_RETRIES) {
-                moveToDeadLetter(entry, "Max retries exceeded");
-                continue;
-            }
+            boolean shouldSkip =
+                    entry.retryCount() >= MAX_RETRIES ||
+                            entry.nextAttemptAt().isAfter(Instant.now());
 
-            if (entry.nextAttemptAt().isAfter(Instant.now())) {
-                continue; // backoff not elapsed
+            if (shouldSkip) {
+                if (entry.retryCount() >= MAX_RETRIES) {
+                    moveToDeadLetter(entry, "Max retries exceeded");
+                }
+                continue; // jedyne continue w pętli
             }
 
             try {
@@ -68,7 +70,6 @@ public class NotificationOutboxProcessor {
 
                 metrics.successCounter.inc();
                 outbox.delete(entry);
-                log.info("Outbox retry succeeded for reservation {}", entry.reservationId());
 
             } catch (Exception e) {
 

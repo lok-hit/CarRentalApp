@@ -2,7 +2,6 @@ package car_rental_app.adapter.in.web.exception;
 
 import car_rental_app.adapter.in.web.dto.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

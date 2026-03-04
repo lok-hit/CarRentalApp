@@ -28,35 +28,46 @@ public class NotificationClient {
     }
 
     public void sendReservationConfirmed(ReservationNotificationRequest request) {
-        try {
-            rest.postForLocation(
-                    baseUrl + "/notifications/reservation-confirmed",
-                    request
-            );
-            log.info("Fire-and-forget: sent reservation-confirmed for {}", request.reservationId());
-        } catch (Exception e) {
-            log.error("Fire-and-forget FAILED for reservation-cancelled {}", request.reservationId(), e);
-            NotificationOutboxEntry entry = new NotificationOutboxEntry(null, request.reservationId(),
-                    request.customerId(), request.email(), request.reason(),
-                    "RESERVATION_CANCELLED", request.timestamp(), 0,
-                    e.getMessage(), Instant.now().plusSeconds(10));
-            outbox.save(entry);
-        }
+        sendNotification(
+                request,
+                "/notifications/reservation-confirmed",
+                "RESERVATION_CONFIRMED"
+        );
     }
 
     public void sendReservationCancelled(ReservationNotificationRequest request) {
+        sendNotification(
+                request,
+                "/notifications/reservation-cancelled",
+                "RESERVATION_CANCELLED"
+        );
+    }
+
+    private void sendNotification(
+            ReservationNotificationRequest request,
+            String endpoint,
+            String type
+    ) {
         try {
-            rest.postForLocation(
-                    baseUrl + "/notifications/reservation-cancelled",
-                    request
-            );
-            log.info("Fire-and-forget: sent reservation-cancelled for {}", request.reservationId());
+            rest.postForLocation(baseUrl + endpoint, request);
+            log.info("Fire-and-forget: sent {} for {}",
+                    type.toLowerCase(), request.reservationId());
         } catch (Exception e) {
-            log.error("Fire-and-forget FAILED for reservation-confirmed {}", request.reservationId(), e);
-            NotificationOutboxEntry entry = new NotificationOutboxEntry(null, request.reservationId(),
-                    request.customerId(), request.email(), request.reason(),
-                    "RESERVATION_CONFIRMED", request.timestamp(), 0,
-                    e.getMessage(), Instant.now().plusSeconds(10));
+            log.error("Fire-and-forget FAILED for {} {}", type.toLowerCase(), request.reservationId(), e);
+
+            NotificationOutboxEntry entry = new NotificationOutboxEntry(
+                    null,
+                    request.reservationId(),
+                    request.customerId(),
+                    request.email(),
+                    request.reason(),
+                    type,
+                    request.timestamp(),
+                    0,
+                    e.getMessage(),
+                    Instant.now().plusSeconds(10)
+            );
+
             outbox.save(entry);
         }
     }

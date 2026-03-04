@@ -57,7 +57,6 @@ outbox:
   poll-interval-ms: 500
   batch-size: 50
 
-
 management:
   endpoints:
     web:
@@ -66,7 +65,6 @@ management:
   metrics:
     tags:
       application: reservation-service
-
 
 notification-service:
   base-url: http://notification-service
