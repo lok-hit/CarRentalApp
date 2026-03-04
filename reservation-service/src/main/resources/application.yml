@@ -66,3 +66,7 @@ management:
   metrics:
     tags:
       application: reservation-service
+
+
+notification-service:
+  base-url: http://notification-service

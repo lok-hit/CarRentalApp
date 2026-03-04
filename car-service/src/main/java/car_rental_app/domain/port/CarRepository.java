@@ -17,16 +17,6 @@ public interface CarRepository {
  */
 Optional<Car> findById(CarId id);
 
-    /**
- * Retrieves the cars that are currently available for rental.
- *
- * @return a list of available {@code Car} entities; empty if none are available
- */
-List<Car> findAvailable();
-    /**
- * Deletes all car entities from the repository.
- *
- * After invocation, the repository will contain no stored Car entries.
- */
-void DeleteAll();
+    List<Car> findAvailable();
+    void deleteAll();
 }

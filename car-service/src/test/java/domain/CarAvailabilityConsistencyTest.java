@@ -34,7 +34,7 @@ public class CarAvailabilityConsistencyTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setup() {
-        carRepository.DeleteAll();
+        carRepository.deleteAll();
         carRepository.save(car);
     }
 
