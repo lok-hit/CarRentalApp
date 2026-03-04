@@ -1,4 +1,4 @@
-package car_rental_app.adapter.in.messaging.validation;
+package car_rental_app.adapter.in.messaging;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

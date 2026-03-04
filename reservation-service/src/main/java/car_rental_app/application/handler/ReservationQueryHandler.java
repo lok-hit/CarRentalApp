@@ -26,6 +26,6 @@ public class ReservationQueryHandler {
 
     public List<ReservationDetailsResponse> handle(ListReservationsByCustomerQuery query) {
         log.info("QueryHandler: list reservations for customer {}", query.customerId());
-        return queryService.listReservationsForCustomer(query.customerId());
+        return queryService.listReservationsForCustomer(query.customerId(), page, cappedSize);
     }
 }

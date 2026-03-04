@@ -2,13 +2,17 @@ package car_rental_app.adapter.in.web.controller;
 
 import car_rental_app.adapter.in.web.dto.ReservationDetailsResponse;
 import car_rental_app.application.query.ReservationQueryService;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/reservations")
+@Validated
 public class ReservationQueryController {
 
     private final ReservationQueryService queryService;
@@ -22,14 +26,14 @@ public class ReservationQueryController {
         return ResponseEntity.ok(queryService.getReservationDetails(id));
     }
 
-    @GetMapping
-    public ResponseEntity<List<ReservationDetailsResponse>> listByCustomer(
-            @RequestParam(name = "customerId", required = false) String customerId
-    ) {
-        if (customerId == null || customerId.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        return ResponseEntity.ok(queryService.listReservationsForCustomer(customerId));
+    @GetMapping("/customer/{customerId}")
+    public List<ReservationDetailsResponse> listByCustomer(@PathVariable @NotBlank String customerId,
+                                                           @RequestParam(defaultValue = "0")
+                                                           @Min(0) int page,
+                                                           @RequestParam(defaultValue = "20")
+                                                               @Min(1) int size) {
+        int cappedSize = Math.min(size, 100);
+        return queryService.listReservationsForCustomer(customerId, page, cappedSize);
     }
 }
+

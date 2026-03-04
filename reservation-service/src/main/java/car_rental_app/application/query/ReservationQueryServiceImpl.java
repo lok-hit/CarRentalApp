@@ -25,7 +25,7 @@ public class ReservationQueryServiceImpl implements ReservationQueryService {
     }
 
     @Override
-    public List<ReservationDetailsResponse> listReservationsForCustomer(String customerId) {
+    public List<ReservationDetailsResponse> listReservationsForCustomer(String customerId, int page, int cappedSize) {
         return repository.findByCustomerId(customerId)
                 .stream()
                 .map(this::map)

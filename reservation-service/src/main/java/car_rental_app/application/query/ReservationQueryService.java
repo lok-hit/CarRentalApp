@@ -8,5 +8,5 @@ public interface ReservationQueryService {
 
     ReservationDetailsResponse getReservationDetails(String reservationId);
 
-    List<ReservationDetailsResponse> listReservationsForCustomer(String customerId);
+    List<ReservationDetailsResponse> listReservationsForCustomer(String customerId, int page, int cappedSize);
 }

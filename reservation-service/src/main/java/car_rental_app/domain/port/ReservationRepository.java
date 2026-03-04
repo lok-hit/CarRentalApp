@@ -11,5 +11,5 @@ public interface ReservationRepository {
 
     Reservation findById(ReservationId id);
 
-    List<Reservation> findActiveByCarId(String s);
+    List<Reservation> findActiveByCarId(String carId);
 }
