@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "reservation-service.fullname" . }}
+  labels:
+    app: {{ include "reservation-service.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "reservation-service.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "reservation-service.name" . }}
+    spec:
+      containers:
+        - name: reservation-service
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          ports:
+            - containerPort: 8082
+
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "{{ .Values.env.datasourceUrl }}"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "{{ .Values.env.datasourceUser }}"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "{{ .Values.env.datasourcePassword }}"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "{{ .Values.env.kafkaBootstrap }}"
+            - name: NOTIFICATION_SERVICE_BASE_URL
+              value: "{{ .Values.env.notificationBaseUrl }}"
+
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path }}
+              port: {{ .Values.livenessProbe.port }}
+            initialDelaySeconds: 20
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.readinessProbe.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
