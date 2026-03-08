@@ -48,12 +48,13 @@ public class NotificationClient {
             String endpoint,
             String type
     ) {
+        String safeType =type !=null ? type.toLowerCase(): "unknown";
         try {
             rest.postForLocation(baseUrl + endpoint, request);
             log.info("Fire-and-forget: sent {} for {}",
-                    type.toLowerCase(), request.reservationId());
+                    safeType, request.reservationId());
         } catch (Exception e) {
-            log.error("Fire-and-forget FAILED for {} {}", type.toLowerCase(), request.reservationId(), e);
+            log.error("Fire-and-forget FAILED for {} {}", safeType, request.reservationId(), e);
 
             NotificationOutboxEntry entry = new NotificationOutboxEntry(
                     null,

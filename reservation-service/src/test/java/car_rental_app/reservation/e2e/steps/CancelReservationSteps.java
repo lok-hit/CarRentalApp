@@ -1,13 +1,15 @@
 package car_rental_app.reservation.e2e.steps;
 
 import car_rental_app.reservation.e2e.CucumberSpringConfig;
-import io.cucumber.java.en.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class CancelReservationSteps extends CucumberSpringConfig {
 

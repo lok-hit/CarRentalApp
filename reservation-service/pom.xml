@@ -62,6 +62,11 @@
             <version>2.5.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.38</version>
+        </dependency>
         <!-- FLYWAY (dla SQL – jeśli chcesz tylko Mongo, mogę usunąć) -->
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -137,6 +142,11 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

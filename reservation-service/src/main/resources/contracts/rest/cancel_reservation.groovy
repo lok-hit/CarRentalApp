@@ -4,7 +4,7 @@ Contract.make {
     description "List reservations for current user"
 
     request {
-        method GET()
+        method "GET"
         url "/reservations"
         headers {
             accept(applicationJson())

@@ -3,10 +3,10 @@ package car_rental_app.reservation.contract;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @EmbeddedKafka(topics = "reservation.events", partitions = 1)
-public class ReservationKafkaContractTest extends BaseContractTest {
+class ReservationKafkaContractTest extends BaseContractTest {
 
     @Test
     void shouldPublishReservationCreatedEvent() {

@@ -4,7 +4,7 @@ Contract.make {
     description "Get reservation by ID"
 
     request {
-        method GET()
+        method "GET"
         urlPath($(regex("/reservations/[a-zA-Z0-9-]+")))
     }
 

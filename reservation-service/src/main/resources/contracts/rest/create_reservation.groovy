@@ -4,7 +4,7 @@ Contract.make {
     description "Create reservation"
 
     request {
-        method POST()
+        method "POST"
         url "/reservations"
         headers {
             contentType(applicationJson())
