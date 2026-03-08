@@ -1,0 +1,23 @@
+package car.rental.app.payment.config;
+
+import io.swagger.v3.oas.models.ExternalDocumentation;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class OpenApiConfig {
+
+    @Bean
+    public OpenAPI paymentOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Payment Service API")
+                        .version("v1")
+                        .description("Handles payments in Car Rental App"))
+                .externalDocs(new ExternalDocumentation()
+                        .description("API Gateway")
+                        .url("http://api-gateway:8080"));
+    }
+}
