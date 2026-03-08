@@ -18,8 +18,6 @@
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
-# IntelliJ generated files
-out/
 
 ### Java ###
 *.class
@@ -63,7 +61,7 @@ mvnw.cmd
 ### Logs ###
 logs/
 *.log
-*.out
+
 
 ### OS files ###
 .DS_Store
