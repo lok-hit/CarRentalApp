@@ -38,7 +38,7 @@ spring:
       routes:
         # Example: reservations service with circuit breaker + rate limiting
         - id: reservations-service
-          uri: lb://reservations-service
+          uri: lb://reservation-service
           predicates:
             - Path=/api/reservations/**
           filters:

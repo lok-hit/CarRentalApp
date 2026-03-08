@@ -1,0 +1,44 @@
+replicaCount: 2
+
+image:
+  repository: registry.example.com/reservation-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8082
+
+env:
+  datasourceUrl: jdbc:postgresql://postgres:5432/reservation
+  datasourceUser: reservation
+  datasourcePassword: reservation
+  kafkaBootstrap: kafka:9092
+  notificationBaseUrl: http://notification-service
+
+resources:
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+
+livenessProbe:
+  path: /actuator/health/liveness
+  port: 8082
+
+readinessProbe:
+  path: /actuator/health/readiness
+  port: 8082
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+ingress:
+  enabled: false
+  className: nginx
+  host: reservation.example.com

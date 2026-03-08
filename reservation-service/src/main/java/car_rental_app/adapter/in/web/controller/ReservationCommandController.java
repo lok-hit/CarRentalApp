@@ -1,6 +1,8 @@
 package car_rental_app.adapter.in.web.controller;
 
-import car_rental_app.application.command.*;
+import car_rental_app.application.command.CancelReservationCommand;
+import car_rental_app.application.command.ConfirmReservationCommand;
+import car_rental_app.application.command.CreateReservationCommand;
 import car_rental_app.application.handler.ReservationCommandHandler;
 import car_rental_app.domain.model.ReservationId;
 import org.springframework.http.ResponseEntity;

@@ -1,11 +1,11 @@
 package car_rental_app.adapter.in.web;
 
-import org.slf4j.MDC;
-import org.springframework.stereotype.Component;
-
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 
 @Component

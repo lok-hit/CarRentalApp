@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        REGISTRY = "registry.example.com"
+        IMAGE = "reservation-service"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                sh "mvn -B clean verify -DskipTests=false"
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t $REGISTRY/$IMAGE:${env.BUILD_NUMBER} ."
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                sh "docker push $REGISTRY/$IMAGE:${env.BUILD_NUMBER}"
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sshagent(['deploy-key']) {
+                    sh """
+                        ssh deploy@server "
+                            cd /opt/reservation-service &&
+                            docker-compose pull &&
+                            docker-compose up -d
+                        "
+                    """
+                }
+            }
+        }
+    }
+}

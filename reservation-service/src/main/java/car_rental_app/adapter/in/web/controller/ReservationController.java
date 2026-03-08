@@ -1,6 +1,8 @@
 package car_rental_app.adapter.in.web.controller;
 
-import car_rental_app.adapter.in.web.dto.*;
+import car_rental_app.adapter.in.web.dto.CancelReservationRequest;
+import car_rental_app.adapter.in.web.dto.CreateReservationRequest;
+import car_rental_app.adapter.in.web.dto.ReservationResponse;
 import car_rental_app.application.service.ReservationApplicationService;
 import car_rental_app.domain.model.*;
 import io.swagger.v3.oas.annotations.Operation;
