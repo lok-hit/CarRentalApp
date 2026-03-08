@@ -1,7 +1,9 @@
 package car_rental_app.adapter.out.persistence.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -14,6 +16,8 @@ import java.time.Instant;
 @Document(collection = "payments")
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PaymentEntity {
 
     @Id
@@ -37,27 +41,4 @@ public class PaymentEntity {
     @LastModifiedDate
     private Instant updatedAt;
 
-    public PaymentEntity() {}
-
-    public PaymentEntity(
-            String id,
-            String reservationId,
-            String customerId,
-            BigDecimal amount,
-            PaymentStatus status,
-            Instant paidAt,
-            Instant createdAt,
-            Instant updatedAt
-    ) {
-        this.id = id;
-        this.reservationId = reservationId;
-        this.customerId = customerId;
-        this.amount = amount;
-        this.status = status;
-        this.paidAt = paidAt;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
-    // Gettery i settery (lub Lombok)
 }

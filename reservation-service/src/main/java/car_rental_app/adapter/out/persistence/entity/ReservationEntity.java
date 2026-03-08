@@ -1,5 +1,6 @@
 package car_rental_app.adapter.out.persistence.entity;
 
+import car_rental_app.domain.model.Money;
 import car_rental_app.domain.model.ReservationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,8 @@ import java.time.Instant;
 @Document(collection = "reservations")
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReservationEntity {
 
     @Id
@@ -31,6 +34,7 @@ public class ReservationEntity {
 
     private Instant startDate;
     private Instant endDate;
+    private Money price;
 
     private String notes;
 
@@ -39,30 +43,4 @@ public class ReservationEntity {
 
     @LastModifiedDate
     private Instant updatedAt;
-
-    public ReservationEntity() {}
-
-    public ReservationEntity(
-            String id,
-            String customerId,
-            String carId,
-            ReservationStatus status,
-            Instant startDate,
-            Instant endDate,
-            String notes,
-            Instant createdAt,
-            Instant updatedAt
-    ) {
-        this.id = id;
-        this.customerId = customerId;
-        this.carId = carId;
-        this.status = status;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.notes = notes;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
-
 }
