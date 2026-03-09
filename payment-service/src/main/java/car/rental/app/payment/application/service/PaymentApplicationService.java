@@ -10,6 +10,7 @@ import car.rental.app.payment.domain.port.out.PaymentEventPublisher;
 import car.rental.app.payment.domain.port.out.PaymentProvider;
 import car.rental.app.payment.domain.port.out.PaymentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -20,18 +21,33 @@ public class PaymentApplicationService implements PaymentUseCase {
     private final PaymentRepository repository;
     private final PaymentEventPublisher eventPublisher;
     private final PaymentProvider paymentProvider;
+    private final IdempotencyService idempotencyService;
+    private final IdempotencyKeyGenerator keyGenerator;
 
     public PaymentApplicationService(
             PaymentRepository repository,
-            PaymentEventPublisher eventPublisher, PaymentProvider paymentProvider
+            PaymentEventPublisher eventPublisher,
+            PaymentProvider paymentProvider,
+            IdempotencyService idempotencyService,
+            IdempotencyKeyGenerator keyGenerator
     ) {
         this.repository = repository;
         this.eventPublisher = eventPublisher;
         this.paymentProvider = paymentProvider;
+        this.idempotencyService = idempotencyService;
+        this.keyGenerator = keyGenerator;
     }
 
     @Override
     public Payment processPayment(String reservationId, String customerId, Money amount) {
+
+        String key = keyGenerator.generate(reservationId, customerId, amount);
+
+        if (idempotencyService.isDuplicate(key)) {
+            return repository.findByReservationId(reservationId).stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Idempotent payment not found"));
+        }
 
         Payment payment = new Payment(
                 UUID.randomUUID().toString(),
@@ -45,34 +61,33 @@ public class PaymentApplicationService implements PaymentUseCase {
         );
 
         try {
+
             boolean charged = paymentProvider.charge(payment);
 
             if (!charged) {
-                PaymentFailed failed = new PaymentFailed(
+                eventPublisher.publish(new PaymentFailed(
                         payment.id(),
                         payment.reservationId(),
                         "Stripe declined the payment"
-                );
-                eventPublisher.publish(failed);
+                ));
                 return payment;
             }
 
             Payment completed = markAsSuccess(payment);
 
             repository.save(completed);
+            idempotencyService.markProcessed(key);
             eventPublisher.publish(new PaymentCompleted(completed));
 
             return completed;
 
         } catch (Exception ex) {
 
-            PaymentFailed failed = new PaymentFailed(
+            eventPublisher.publish(new PaymentFailed(
                     payment.id(),
                     payment.reservationId(),
                     ex.getMessage()
-            );
-
-            eventPublisher.publish(failed);
+            ));
 
             return payment;
         }
