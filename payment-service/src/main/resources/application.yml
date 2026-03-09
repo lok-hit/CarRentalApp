@@ -60,3 +60,5 @@ payment:
 grpc:
   server:
     port: 9092
+stripe:
+  secret-key: sk_test_123
