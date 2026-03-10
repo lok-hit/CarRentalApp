@@ -4,6 +4,7 @@ package car.rental.app.payment.adapter.out.provider;
 import car.rental.app.payment.domain.model.Money;
 import car.rental.app.payment.domain.model.Payment;
 import car.rental.app.payment.domain.port.out.PaymentProvider;
+import car.rental.app.payment.domain.port.out.PaymentProviderResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,7 +34,7 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
             backoff = @Backoff(delay = 500, multiplier = 2.0),
             include = { RuntimeException.class }
     )
-    public boolean charge(Payment payment) {
+    public PaymentProviderResult charge(Payment payment) {
 
         String url = "https://api.stripe.com/v1/payment_intents";
 
@@ -42,8 +43,8 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         Map<String, String> body = new HashMap<>();
-        body.put("amount", convertAmount(new Money(payment.amount().amount(), payment.amount().currency())));
-        body.put("currency", payment.amount().currency().toString());
+        body.put("amount", convertAmount(payment.amount()));
+        body.put("currency", payment.amount().currency().getCurrencyCode().toLowerCase());
         body.put("payment_method_types[]", "card");
         body.put("metadata[reservationId]", payment.reservationId());
         body.put("metadata[paymentId]", payment.id());
@@ -58,18 +59,24 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
                     String.class
             );
 
-            if (response.getStatusCode().is2xxSuccessful()) {
-                JsonNode json = objectMapper.readTree(response.getBody());
-                return "requires_confirmation".equals(json.get("status").asText())
-                        || "succeeded".equals(json.get("status").asText());
+            JsonNode json = objectMapper.readTree(response.getBody());
+            String status = json.get("status").asText();
+
+            if ("succeeded".equals(status) || "requires_confirmation".equals(status)) {
+                return PaymentProviderResult.ok();
             }
 
-            return false;
+            String declineReason = json.has("last_payment_error")
+                    ? json.get("last_payment_error").get("message").asText()
+                    : "Payment declined";
+
+            return PaymentProviderResult.failed(declineReason);
 
         } catch (Exception ex) {
             throw new RuntimeException("Stripe API error: " + ex.getMessage(), ex);
         }
     }
+
 
     private String convertAmount(Money money) {
         BigDecimal multiplied = money.amount().multiply(BigDecimal.valueOf(100));

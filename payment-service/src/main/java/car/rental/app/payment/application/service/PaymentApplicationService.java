@@ -8,8 +8,8 @@ import car.rental.app.payment.domain.model.PaymentStatus;
 import car.rental.app.payment.domain.port.in.PaymentUseCase;
 import car.rental.app.payment.domain.port.out.PaymentEventPublisher;
 import car.rental.app.payment.domain.port.out.PaymentProvider;
+import car.rental.app.payment.domain.port.out.PaymentProviderResult;
 import car.rental.app.payment.domain.port.out.PaymentRepository;
-import org.springframework.stereotype.Service;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -23,19 +23,21 @@ public class PaymentApplicationService implements PaymentUseCase {
     private final PaymentProvider paymentProvider;
     private final IdempotencyService idempotencyService;
     private final IdempotencyKeyGenerator keyGenerator;
+    private final EventFactory eventFactory;
 
     public PaymentApplicationService(
             PaymentRepository repository,
             PaymentEventPublisher eventPublisher,
             PaymentProvider paymentProvider,
             IdempotencyService idempotencyService,
-            IdempotencyKeyGenerator keyGenerator
+            IdempotencyKeyGenerator keyGenerator, EventFactory eventFactory
     ) {
         this.repository = repository;
         this.eventPublisher = eventPublisher;
         this.paymentProvider = paymentProvider;
         this.idempotencyService = idempotencyService;
         this.keyGenerator = keyGenerator;
+        this.eventFactory = eventFactory;
     }
 
     @Override
@@ -62,13 +64,13 @@ public class PaymentApplicationService implements PaymentUseCase {
 
         try {
 
-            boolean charged = paymentProvider.charge(payment);
+            PaymentProviderResult result = paymentProvider.charge(payment);
 
-            if (!charged) {
-                eventPublisher.publish(new PaymentFailed(
+            if (!result.success()) {
+                eventPublisher.publish(eventFactory.paymentFailed(
                         payment.id(),
                         payment.reservationId(),
-                        "Stripe declined the payment"
+                        result.failureReason()
                 ));
                 return payment;
             }
@@ -77,17 +79,18 @@ public class PaymentApplicationService implements PaymentUseCase {
 
             repository.save(completed);
             idempotencyService.markProcessed(key);
-            eventPublisher.publish(new PaymentCompleted(completed));
+            eventPublisher.publish(eventFactory.paymentCompleted(completed));
 
             return completed;
 
         } catch (Exception ex) {
 
-            eventPublisher.publish(new PaymentFailed(
+            eventPublisher.publish(eventFactory.paymentFailed(
                     payment.id(),
                     payment.reservationId(),
                     ex.getMessage()
             ));
+
 
             return payment;
         }

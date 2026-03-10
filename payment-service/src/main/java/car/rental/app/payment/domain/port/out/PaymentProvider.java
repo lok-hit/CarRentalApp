@@ -4,5 +4,5 @@ import car.rental.app.payment.domain.model.Payment;
 
 public interface PaymentProvider {
 
-    boolean charge (Payment payment);
+    PaymentProviderResult charge(Payment payment)
 }
