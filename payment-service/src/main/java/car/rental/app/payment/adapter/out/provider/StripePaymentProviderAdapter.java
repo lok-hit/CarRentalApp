@@ -1,13 +1,14 @@
 package car.rental.app.payment.adapter.out.provider;
 
 
+import car.rental.app.payment.application.service.MetricsService;
 import car.rental.app.payment.domain.model.Money;
 import car.rental.app.payment.domain.model.Payment;
 import car.rental.app.payment.domain.port.out.PaymentProvider;
 import car.rental.app.payment.domain.port.out.PaymentProviderResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,9 +26,16 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final MetricsService metricsService;
+
 
     @Value("${stripe.secret-key}")
     private String secretKey;
+
+    @Autowired
+    public StripePaymentProviderAdapter(MetricsService metricsService) {
+        this.metricsService = metricsService;
+    }
 
     @Override
     @Retryable(
@@ -35,6 +44,8 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
             include = {RuntimeException.class}
     )
     public PaymentProviderResult charge(Payment payment) {
+
+        Instant start = Instant.now(); // start pomiaru czasu
 
         String url = "https://api.stripe.com/v1/payment_intents";
 
@@ -66,17 +77,26 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
             JsonNode json = objectMapper.readTree(responsePayload);
             String status = json.get("status").asText();
 
+            PaymentProviderResult result;
+
             if ("succeeded".equals(status) || "requires_confirmation".equals(status)) {
-                return PaymentProviderResult.ok(requestPayload, responsePayload);
+                result = PaymentProviderResult.ok(requestPayload, responsePayload);
+            } else {
+                String declineReason = json.has("last_payment_error")
+                        ? json.get("last_payment_error").get("message").asText()
+                        : "Payment declined";
+
+                result = PaymentProviderResult.failed(declineReason, requestPayload, responsePayload);
             }
 
-            String declineReason = json.has("last_payment_error")
-                    ? json.get("last_payment_error").get("message").asText()
-                    : "Payment declined";
+            metricsService.recordProviderCall(payment, "stripe", start, result);
 
-            return PaymentProviderResult.failed(declineReason, requestPayload, responsePayload);
+            return result;
 
         } catch (Exception ex) {
+
+            metricsService.recordProviderException(payment, "stripe");
+
             throw new RuntimeException("Stripe API error: " + ex.getMessage(), ex);
         }
     }
