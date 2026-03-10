@@ -24,13 +24,14 @@ public class PaymentApplicationService implements PaymentUseCase {
     private final IdempotencyService idempotencyService;
     private final IdempotencyKeyGenerator keyGenerator;
     private final EventFactory eventFactory;
+    private final PaymentAuditService auditService;
 
     public PaymentApplicationService(
             PaymentRepository repository,
             PaymentEventPublisher eventPublisher,
             PaymentProvider paymentProvider,
             IdempotencyService idempotencyService,
-            IdempotencyKeyGenerator keyGenerator, EventFactory eventFactory
+            IdempotencyKeyGenerator keyGenerator, EventFactory eventFactory, PaymentAuditService auditService
     ) {
         this.repository = repository;
         this.eventPublisher = eventPublisher;
@@ -38,6 +39,7 @@ public class PaymentApplicationService implements PaymentUseCase {
         this.idempotencyService = idempotencyService;
         this.keyGenerator = keyGenerator;
         this.eventFactory = eventFactory;
+        this.auditService = auditService;
     }
 
     @Override
@@ -65,6 +67,13 @@ public class PaymentApplicationService implements PaymentUseCase {
         try {
 
             PaymentProviderResult result = paymentProvider.charge(payment);
+            auditService.audit(
+                    payment,
+                    "stripe",
+                    requestPayload,
+                    responsePayload,
+                    result
+            );
 
             if (!result.success()) {
                 eventPublisher.publish(eventFactory.paymentFailed(

@@ -32,7 +32,7 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
     @Retryable(
             maxAttempts = 3,
             backoff = @Backoff(delay = 500, multiplier = 2.0),
-            include = { RuntimeException.class }
+            include = {RuntimeException.class}
     )
     public PaymentProviderResult charge(Payment payment) {
 
@@ -49,6 +49,8 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
         body.put("metadata[reservationId]", payment.reservationId());
         body.put("metadata[paymentId]", payment.id());
 
+        String requestPayload = body.toString();
+
         HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
 
         try {
@@ -59,27 +61,32 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
                     String.class
             );
 
-            JsonNode json = objectMapper.readTree(response.getBody());
+            String responsePayload = response.getBody();
+
+            JsonNode json = objectMapper.readTree(responsePayload);
             String status = json.get("status").asText();
 
             if ("succeeded".equals(status) || "requires_confirmation".equals(status)) {
-                return PaymentProviderResult.ok();
+                return PaymentProviderResult.ok(requestPayload, responsePayload);
             }
 
             String declineReason = json.has("last_payment_error")
                     ? json.get("last_payment_error").get("message").asText()
                     : "Payment declined";
 
-            return PaymentProviderResult.failed(declineReason);
+            return PaymentProviderResult.failed(declineReason, requestPayload, responsePayload);
 
         } catch (Exception ex) {
             throw new RuntimeException("Stripe API error: " + ex.getMessage(), ex);
         }
     }
 
-
     private String convertAmount(Money money) {
-        BigDecimal multiplied = money.amount().multiply(BigDecimal.valueOf(100));
-        return multiplied.toBigInteger().toString();
+        int fractionDigits = money.currency().getDefaultFractionDigits();
+
+        BigDecimal multiplier = BigDecimal.TEN.pow(fractionDigits);
+        BigDecimal scaled = money.amount().multiply(multiplier);
+
+        return scaled.toBigIntegerExact().toString();
     }
 }
