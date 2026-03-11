@@ -6,6 +6,7 @@ import car.rental.app.payment.domain.model.Money;
 import car.rental.app.payment.domain.model.Payment;
 import car.rental.app.payment.domain.port.out.PaymentProvider;
 import car.rental.app.payment.domain.port.out.PaymentProviderResult;
+import car.rental.app.payment.domain.port.out.RefundProviderResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,11 +77,12 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
 
             JsonNode json = objectMapper.readTree(responsePayload);
             String status = json.get("status").asText();
+            String providerId = json.get("providerPaymentId").asText();
 
             PaymentProviderResult result;
 
             if ("succeeded".equals(status) || "requires_confirmation".equals(status)) {
-                result = PaymentProviderResult.ok(requestPayload, responsePayload);
+                result = PaymentProviderResult.ok(providerId,requestPayload, responsePayload);
             } else {
                 String declineReason = json.has("last_payment_error")
                         ? json.get("last_payment_error").get("message").asText()
@@ -98,6 +100,63 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
             metricsService.recordProviderException(payment, "stripe");
 
             throw new RuntimeException("Stripe API error: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public RefundProviderResult refund(Payment payment) {
+
+        Instant start = Instant.now();
+
+        String url = "https://api.stripe.com/v1/refunds";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(secretKey, "");
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        Map<String, String> body = new HashMap<>();
+        body.put("payment_intent", payment.providerPaymentId()); // ID payment_intent z charge()
+        body.put("metadata[paymentId]", payment.id());
+        body.put("metadata[reservationId]", payment.reservationId());
+
+        String requestPayload = body.toString();
+
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    String.class
+            );
+
+            String responsePayload = response.getBody();
+
+            JsonNode json = objectMapper.readTree(responsePayload);
+            String status = json.get("status").asText();
+
+            RefundProviderResult result;
+
+            if ("succeeded".equals(status)) {
+                result = RefundProviderResult.ok(requestPayload, responsePayload);
+            } else {
+                String reason = json.has("failure_reason")
+                        ? json.get("failure_reason").asText()
+                        : "Refund failed";
+
+                result = RefundProviderResult.failed(reason, requestPayload, responsePayload);
+            }
+
+            metricsService.recordProviderCall(payment, "stripe_refund", start, result);
+
+            return result;
+
+        } catch (Exception ex) {
+
+            metricsService.recordProviderException(payment, "stripe_refund");
+
+            throw new StripeException("Stripe refund error: " + ex.getMessage(), ex);
         }
     }
 

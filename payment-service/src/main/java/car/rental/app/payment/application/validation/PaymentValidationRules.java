@@ -8,20 +8,23 @@ import java.util.Currency;
 
 public class PaymentValidationRules {
 
-    public static ValidationRule<String> reservationIdNotEmpty =
-            id -> require(id != null && !id.isBlank(),
-                    "Reservation ID cannot be empty");
+    private PaymentValidationRules() {
 
-    public static ValidationRule<String> customerIdNotEmpty =
+    }
+
+    public static final ValidationRule<String> reservationIdNotEmpty = id -> require(id != null && !id.isBlank(),
+            "Reservation ID cannot be empty");
+
+    public static final ValidationRule<String> customerIdNotEmpty =
             id -> require(id != null && !id.isBlank(), "Customer ID cannot be empty");
 
-    public static ValidationRule<Money> amountNotNull =
+    public static final ValidationRule<Money> amountNotNull =
             money -> require(money != null && money.amount() != null, "Amount cannot be null");
 
-    public static ValidationRule<Money> amountGreaterThanZero =
+    public static final ValidationRule<Money> amountGreaterThanZero =
             money -> require(money.amount().compareTo(BigDecimal.ZERO) > 0, "Amount must be greater than zero");
 
-    public static ValidationRule<Money> currencyValid =
+    public static final ValidationRule<Money> currencyValid =
             money -> require(isValidCurrency(money.currency()), "Invalid currency: " + money.currency());
 
     private static boolean isValidCurrency(Currency currency) {

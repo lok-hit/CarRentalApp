@@ -6,10 +6,7 @@ import car.rental.app.payment.domain.model.Money;
 import car.rental.app.payment.domain.model.Payment;
 import car.rental.app.payment.domain.model.PaymentStatus;
 import car.rental.app.payment.domain.port.in.PaymentUseCase;
-import car.rental.app.payment.domain.port.out.PaymentEventPublisher;
-import car.rental.app.payment.domain.port.out.PaymentProvider;
-import car.rental.app.payment.domain.port.out.PaymentProviderResult;
-import car.rental.app.payment.domain.port.out.PaymentRepository;
+import car.rental.app.payment.domain.port.out.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -31,7 +28,9 @@ public class PaymentApplicationService implements PaymentUseCase {
             PaymentEventPublisher eventPublisher,
             PaymentProvider paymentProvider,
             IdempotencyService idempotencyService,
-            IdempotencyKeyGenerator keyGenerator, EventFactory eventFactory, PaymentAuditService auditService
+            IdempotencyKeyGenerator keyGenerator,
+            EventFactory eventFactory,
+            PaymentAuditService auditService
     ) {
         this.repository = repository;
         this.eventPublisher = eventPublisher;
@@ -53,25 +52,30 @@ public class PaymentApplicationService implements PaymentUseCase {
                     .orElseThrow(() -> new IllegalStateException("Idempotent payment not found"));
         }
 
+        Instant now = Instant.now();
+
         Payment payment = new Payment(
                 UUID.randomUUID().toString(),
                 reservationId,
                 customerId,
                 amount,
                 PaymentStatus.PENDING,
-                null,
-                Instant.now(),
-                Instant.now()
+                null,      // providerPaymentId
+                null,      // paidAt
+                now,       // createdAt
+                now        // updatedAt
         );
 
-        try {
+        repository.save(payment);
 
+        try {
             PaymentProviderResult result = paymentProvider.charge(payment);
+
             auditService.audit(
                     payment,
                     "stripe",
-                    requestPayload,
-                    responsePayload,
+                    result.requestPayload(),
+                    result.responsePayload(),
                     result
             );
 
@@ -84,7 +88,17 @@ public class PaymentApplicationService implements PaymentUseCase {
                 return payment;
             }
 
-            Payment completed = markAsSuccess(payment);
+            Payment completed = new Payment(
+                    payment.id(),
+                    payment.reservationId(),
+                    payment.customerId(),
+                    payment.amount(),
+                    PaymentStatus.SUCCESS,
+                    result.providerPaymentId(),
+                    Instant.now(),      // paidAt
+                    payment.createdAt(),
+                    Instant.now()       // updatedAt
+            );
 
             repository.save(completed);
             idempotencyService.markProcessed(key);
@@ -100,21 +114,50 @@ public class PaymentApplicationService implements PaymentUseCase {
                     ex.getMessage()
             ));
 
-
             return payment;
         }
     }
 
-    private Payment markAsSuccess(Payment payment) {
-        return new Payment(
+    public Payment refundPayment(String paymentId) {
+
+        Payment payment = repository.findById(paymentId)
+                .orElseThrow(() -> new IllegalStateException("Payment not found"));
+
+        RefundProviderResult result = paymentProvider.refund(payment);
+
+        auditService.auditRefund(
+                payment,
+                "stripe",
+                result.requestPayload(),
+                result.responsePayload(),
+                result
+        );
+
+        if (!result.success()) {
+            eventPublisher.publish(eventFactory.refundFailed(
+                    payment.id(),
+                    payment.reservationId(),
+                    result.failureReason()
+            ));
+            return payment;
+        }
+
+        Payment refunded = new Payment(
                 payment.id(),
                 payment.reservationId(),
                 payment.customerId(),
                 payment.amount(),
-                PaymentStatus.SUCCESS,
-                Instant.now(),
+                PaymentStatus.REFUNDED,
+                payment.providerPaymentId(),
+                payment.paidAt(),
                 payment.createdAt(),
                 Instant.now()
         );
+
+        repository.save(refunded);
+
+        eventPublisher.publish(eventFactory.refundCompleted(refunded));
+
+        return refunded;
     }
 }

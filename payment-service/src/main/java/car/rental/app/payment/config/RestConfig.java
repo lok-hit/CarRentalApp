@@ -14,12 +14,23 @@ public class RestConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*")); // w prod: konkretne domeny
+
+        // In production: allow only trusted domains
+        config.setAllowedOrigins(List.of(
+                "https://your-frontend-domain.com",
+                "https://admin.your-domain.com"
+        ));
+
+        // In development: allow localhost
+        config.addAllowedOrigin("http://localhost:3000");
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(false); // safer default
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
         return new CorsFilter(source);
     }
 }

@@ -4,6 +4,7 @@ import car.rental.app.payment.domain.audit.PaymentAuditEntry;
 import car.rental.app.payment.domain.model.Payment;
 import car.rental.app.payment.domain.port.out.PaymentAuditRepository;
 import car.rental.app.payment.domain.port.out.PaymentProviderResult;
+import car.rental.app.payment.domain.port.out.RefundProviderResult;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -24,4 +25,29 @@ public class PaymentAuditService {
 
         repository.save(entry);
     }
+
+    public void auditRefund(
+            Payment payment,
+            String provider,
+            String request,
+            String response,
+            RefundProviderResult result
+    ) {
+        PaymentAuditEntry entry = new PaymentAuditEntry(
+                payment.id(),
+                payment.reservationId(),
+                payment.customerId(),
+                provider,
+                request,
+                response,
+                result.success(),
+                result.failureReason(),
+                Instant.now(),
+                correlationIdService.getOrCreateTraceId(),
+                correlationIdService.getOrCreateCorrelationId()
+        );
+
+        repository.save(entry);
+    }
+
 }

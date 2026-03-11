@@ -4,7 +4,7 @@ import car.rental.app.payment.domain.model.Money;
 
 import java.time.Instant;
 
-public record PaymentCompleted(
+public record RefundCompleted(
         String paymentId,
         String reservationId,
         String customerId,
@@ -12,5 +12,5 @@ public record PaymentCompleted(
         String providerPaymentId,
         Instant paidAt,
         EventMetadata metadata
-) {}
+) { }
 
