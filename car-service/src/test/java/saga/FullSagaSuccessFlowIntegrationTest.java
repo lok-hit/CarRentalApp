@@ -1,16 +1,13 @@
 package saga;
 
-import car_rental_app.BaseIntegrationTest;
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventRepository;
-import car_rental_app.domain.model.CarId;
-import car_rental_app.domain.saga.event.ReservationConfirmedEvent;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import car_rental_app.domain.saga.event.PaymentCompletedEvent;
-import car_rental_app.domain.saga.event.ReservationCreatedEvent;
+import car.rental.app.CarServiceMain;
+import car.rental.app.BaseIntegrationTest;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventRepository;
+import car.rental.app.domain.model.CarId;
+import car.rental.app.domain.saga.event.PaymentCompletedEvent;
+import car.rental.app.domain.saga.event.ReservationCreatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.awaitility.Awaitility;
@@ -26,14 +23,14 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
-public class FullSagaSuccessFlowIntegrationTest extends BaseIntegrationTest {
+@SpringBootTest(classes = CarServiceMain.class)
+class FullSagaSuccessFlowIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     OutboxEventRepository outbox;
 
     @Test
-    public void shouldProcessFullSagaSuccessFlow() throws Exception {
+    void shouldProcessFullSagaSuccessFlow() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         var producer = new KafkaProducer<String, String>(Map.of(
                 "bootstrap.servers",
@@ -83,11 +80,11 @@ public class FullSagaSuccessFlowIntegrationTest extends BaseIntegrationTest {
 
         Awaitility.await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
 
-            ConsumerRecord<String, String> record = KafkaTestUtils.getSingleRecord(consumer,
+            ConsumerRecord<String, String> recorded = KafkaTestUtils.getSingleRecord(consumer,
                     "reservation-events");
 
-            assertThat(record.value()).contains("ReservationConfirmedEvent");
-            assertThat(record.value()).contains("r1");
+            assertThat(recorded.value()).contains("ReservationConfirmedEvent");
+            assertThat(recorded.value()).contains("r1");
         });
     }
 }

@@ -1,8 +1,8 @@
 package outbox;
 
-import car_rental_app.BaseIntegrationTest;
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventDocument;
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventRepository;
+import car.rental.app.BaseIntegrationTest;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventDocument;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventRepository;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -12,7 +12,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +27,7 @@ public class OutboxToKafkaIntegrationTest extends BaseIntegrationTest {
         OutboxEventDocument doc = new OutboxEventDocument("r1",
                 "ReservationCreatedEvent",
                 "{\"reservationId\":\"r1\"}",
-                "PENDING", Instant.now());
+                "PENDING");
 
         repository.save(doc); // consumer
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", String.valueOf(kafka));
@@ -37,9 +36,9 @@ public class OutboxToKafkaIntegrationTest extends BaseIntegrationTest {
                 Awaitility.await().atMost(Duration.ofSeconds(10))
                         .pollInterval(Duration.ofMillis(300))
                         .untilAsserted(() -> {
-                            ConsumerRecord<String, String> record = KafkaTestUtils
+                            ConsumerRecord<String, String> recorded = KafkaTestUtils
                                     .getSingleRecord(consumer, "saga-events");
-                            assertThat(record.value()).contains("reservationId");
+                            assertThat(recorded.value()).contains("reservationId");
                         });
     }
 }

@@ -41,8 +41,7 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
     @Override
     @Retryable(
             maxAttempts = 3,
-            backoff = @Backoff(delay = 500, multiplier = 2.0),
-            include = {RuntimeException.class}
+            backoff = @Backoff(delay = 500, multiplier = 2.0)
     )
     public PaymentProviderResult charge(Payment payment) {
 
@@ -99,7 +98,7 @@ public class StripePaymentProviderAdapter implements PaymentProvider {
 
             metricsService.recordProviderException(payment, "stripe");
 
-            throw new RuntimeException("Stripe API error: " + ex.getMessage(), ex);
+            throw new StripeException("Stripe API error: " + ex.getMessage(), ex);
         }
     }
 

@@ -16,18 +16,18 @@ spec:
       containers:
         - name: otel-collector
           image: otel/opentelemetry-collector-contrib:latest
-          args: ["--config=/etc/otel/config.yaml"]
+          args: ["--car_rental_app.config=/etc/otel/car_rental_app.config.yaml"]
           volumeMounts:
-            - name: otel-config
+            - name: otel-car_rental_app.config
               mountPath: /etc/otel
           ports:
             - containerPort: 4317
             - containerPort: 4318
             - containerPort: 9464
       volumes:
-        - name: otel-config
+        - name: otel-car_rental_app.config
           configMap:
-            name: otel-collector-config
+            name: otel-collector-car_rental_app.config
 ---
 apiVersion: v1
 kind: Service

@@ -1,0 +1,69 @@
+package car.rental.app.adapter.in.rest;
+
+import car.rental.app.application.query.CarDto;
+import car.rental.app.application.query.GetAvailableCarsQuery;
+import car.rental.app.application.query.GetCarByIdQuery;
+import car.rental.app.application.query.mapper.CarMapper;
+import car.rental.app.application.service.CarQueryService;
+import car.rental.app.domain.model.CarId;
+import jakarta.validation.constraints.NotBlank;
+import org.slf4j.MDC;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.logging.Logger;
+
+@RestController
+@RequestMapping("/cars")
+public class CarQueryController {
+    private static final Logger log = Logger.getLogger(CarQueryController.class.getName());
+    private final CarQueryService queryService;
+
+    public CarQueryController(CarQueryService queryService) {
+        this.queryService = queryService;
+    }
+
+    private String trace() {
+        return "trace=" + MDC.get("traceId") + " span=" + MDC.get("spanId");
+    }
+
+    /**
+     * Retrieves a car by its identifier.
+     *
+     * @param id the car identifier (must not be blank)
+     * @return a ResponseEntity containing the CarDto with HTTP 200 if found, or HTTP 404 if not found
+     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<CarDto> getById(@PathVariable @NotBlank String id) {
+        log.info(() -> "[" + trace() + "] REST: GetCarById id=" + id);
+
+        return queryService.handle(new GetCarByIdQuery(new CarId(id)))
+                .map(CarMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Retrieve all available cars.
+     *
+     * @return a ResponseEntity containing a list of CarDto representing the available cars
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<List<CarDto>> getAvailable() {
+        log.info(() -> "[" + trace() + "] REST: GetAvailableCars");
+
+        List<CarDto> cars = queryService.handle(new GetAvailableCarsQuery()).stream()
+                .map(CarMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(cars);
+    }
+
+
+}

@@ -1,5 +1,5 @@
 Car Service
-The Car Service manages the vehicle catalog and availability. It is a core domain service in the CarRentalApp platform.
+The Car Service manages the vehicle catalog and availability. It is a core car_rental_app.domain service in the CarRentalApp platform.
 
 Responsibilities
 Manage car inventory

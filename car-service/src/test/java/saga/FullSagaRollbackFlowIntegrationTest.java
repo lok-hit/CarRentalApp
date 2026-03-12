@@ -1,11 +1,11 @@
 package saga;
 
-import car_rental_app.BaseIntegrationTest;
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventRepository;
-import car_rental_app.domain.model.CarId;
-import car_rental_app.domain.saga.event.PaymentFailedEvent;
-import car_rental_app.domain.saga.event.ReservationCreatedEvent;
-import car_rental_app.domain.saga.event.ReservationRollbackEvent;
+import car.rental.app.CarServiceMain;
+import car.rental.app.BaseIntegrationTest;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventRepository;
+import car.rental.app.domain.model.CarId;
+import car.rental.app.domain.saga.event.PaymentFailedEvent;
+import car.rental.app.domain.saga.event.ReservationCreatedEvent;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -24,14 +24,14 @@ import java.util.Map;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
-@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
-public class FullSagaRollbackFlowIntegrationTest extends BaseIntegrationTest {
+@SpringBootTest(classes = CarServiceMain.class)
+class FullSagaRollbackFlowIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     OutboxEventRepository repository;
 
     @Test
-    public void shouldProcessFullSagaRollbackFlow() throws Exception {
+    void shouldProcessFullSagaRollbackFlow() throws Exception {
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -85,11 +85,11 @@ public class FullSagaRollbackFlowIntegrationTest extends BaseIntegrationTest {
 
         Awaitility.await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
 
-            ConsumerRecord<String, String> record = KafkaTestUtils.getSingleRecord(consumer,
+            ConsumerRecord<String, String> recorded = KafkaTestUtils.getSingleRecord(consumer,
                     "reservation-events");
 
-            assertThat(record.value()).contains("ReservationRollbackEvent");
-            assertThat(record.value()).contains("r1");
+            assertThat(recorded.value()).contains("ReservationRollbackEvent");
+            assertThat(recorded.value()).contains("r1");
         });
     }
 }

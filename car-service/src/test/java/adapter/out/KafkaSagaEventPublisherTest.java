@@ -1,10 +1,10 @@
 package adapter.out;
 
 
-import car_rental_app.application.service.saga.client.KafkaSagaEventPublisher;
-import car_rental_app.application.service.saga.client.SagaEventPublisher;
-import car_rental_app.domain.model.CarId;
-import car_rental_app.domain.saga.event.ReservationCreatedEvent;
+import car.rental.app.application.service.saga.client.KafkaSagaEventPublisher;
+import car.rental.app.application.service.saga.client.SagaEventPublisher;
+import car.rental.app.domain.model.CarId;
+import car.rental.app.domain.saga.event.ReservationCreatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

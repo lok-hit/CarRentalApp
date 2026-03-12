@@ -1,9 +1,9 @@
 $base = "src/main/java/car_rental_app"
 
 $folders = @(
-    "$base/domain/model",
-    "$base/domain/event",
-    "$base/domain/port",
+    "$base/car_rental_app.domain/model",
+    "$base/car_rental_app.domain/event",
+    "$base/car_rental_app.domain/port",
     "$base/application/command",
     "$base/application/service",
     "$base/application/service/saga",
@@ -22,16 +22,16 @@ foreach ($f in $folders) {
 }
 
 $classes = @{
-    "$base/domain/model/Reservation.java" = "package car_rental_app.domain.model; public class Reservation {}"
-    "$base/domain/model/Payment.java" = "package car_rental_app.domain.model; public class Payment {}"
-    "$base/domain/event/ReservationCreatedEvent.java" = "package car_rental_app.domain.event; public class ReservationCreatedEvent {}"
-    "$base/domain/event/ReservationConfirmedEvent.java" = "package car_rental_app.domain.event; public class ReservationConfirmedEvent {}"
-    "$base/domain/event/ReservationCancelledEvent.java" = "package car_rental_app.domain.event; public class ReservationCancelledEvent {}"
-    "$base/domain/event/PaymentCompletedEvent.java" = "package car_rental_app.domain.event; public class PaymentCompletedEvent {}"
-    "$base/domain/event/PaymentFailedEvent.java" = "package car_rental_app.domain.event; public class PaymentFailedEvent {}"
-    "$base/domain/port/ReservationRepository.java" = "package car_rental_app.domain.port; public interface ReservationRepository {}"
-    "$base/domain/port/EventPublisher.java" = "package car_rental_app.domain.port; public interface EventPublisher {}"
-    "$base/domain/port/OutboxEventStore.java" = "package car_rental_app.domain.port; public interface OutboxEventStore {}"
+    "$base/car_rental_app.domain/model/Reservation.java" = "package car_rental_app.car_rental_app.domain.model; public class Reservation {}"
+    "$base/car_rental_app.domain/model/Payment.java" = "package car_rental_app.car_rental_app.domain.model; public class Payment {}"
+    "$base/car_rental_app.domain/event/ReservationCreatedEvent.java" = "package car_rental_app.car_rental_app.domain.event; public class ReservationCreatedEvent {}"
+    "$base/car_rental_app.domain/event/ReservationConfirmedEvent.java" = "package car_rental_app.car_rental_app.domain.event; public class ReservationConfirmedEvent {}"
+    "$base/car_rental_app.domain/event/ReservationCancelledEvent.java" = "package car_rental_app.car_rental_app.domain.event; public class ReservationCancelledEvent {}"
+    "$base/car_rental_app.domain/event/PaymentCompletedEvent.java" = "package car_rental_app.car_rental_app.domain.event; public class PaymentCompletedEvent {}"
+    "$base/car_rental_app.domain/event/PaymentFailedEvent.java" = "package car_rental_app.car_rental_app.domain.event; public class PaymentFailedEvent {}"
+    "$base/car_rental_app.domain/port/ReservationRepository.java" = "package car_rental_app.car_rental_app.domain.port; public interface ReservationRepository {}"
+    "$base/car_rental_app.domain/port/EventPublisher.java" = "package car_rental_app.car_rental_app.domain.port; public interface EventPublisher {}"
+    "$base/car_rental_app.domain/port/OutboxEventStore.java" = "package car_rental_app.car_rental_app.domain.port; public interface OutboxEventStore {}"
     "$base/application/command/CreateReservationCommand.java" = "package car_rental_app.application.command; public class CreateReservationCommand {}"
     "$base/application/service/ReservationApplicationService.java" = "package car_rental_app.application.service; public class ReservationApplicationService {}"
     "$base/application/service/saga/ReservationSagaHandler.java" = "package car_rental_app.application.service.saga; public class ReservationSagaHandler {}"

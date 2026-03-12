@@ -1,11 +1,11 @@
 package unit;
 
-import bff.dto.CarDto;
-import bff.dto.DashboardDto;
-import bff.dto.UserProfileDto;
-import bff.rest.BFFRestController;
-import infrastructure.clients.CarsClient;
-import infrastructure.clients.UserClient;
+import car_rental_app.bff.dto.CarDto;
+import car_rental_app.bff.dto.DashboardDto;
+import car_rental_app.bff.dto.UserProfileDto;
+import car_rental_app.bff.rest.BFFRestController;
+import car_rental_app.infrastructure.clients.CarsClient;
+import car_rental_app.infrastructure.clients.UserClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

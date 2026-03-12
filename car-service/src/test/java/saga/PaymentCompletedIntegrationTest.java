@@ -1,8 +1,9 @@
 package saga;
 
-import car_rental_app.BaseIntegrationTest;
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventRepository;
-import car_rental_app.domain.saga.event.PaymentCompletedEvent;
+import car.rental.app.CarServiceMain;
+import car.rental.app.BaseIntegrationTest;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventRepository;
+import car.rental.app.domain.saga.event.PaymentCompletedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -20,8 +21,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
-public class PaymentCompletedIntegrationTest extends BaseIntegrationTest {
+@SpringBootTest(classes = CarServiceMain.class)
+class PaymentCompletedIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     OutboxEventRepository outbox;
@@ -80,11 +81,11 @@ public class PaymentCompletedIntegrationTest extends BaseIntegrationTest {
         consumer.subscribe(List.of("reservation-events"));
 
         Awaitility.await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
-            ConsumerRecord<String, String> record =
+            ConsumerRecord<String, String> recorded =
                     KafkaTestUtils.getSingleRecord(consumer, "reservation-events");
 
-            assertThat(record.value()).contains("ReservationConfirmedEvent");
-            assertThat(record.value()).contains("r1");
+            assertThat(recorded.value()).contains("ReservationConfirmedEvent");
+            assertThat(recorded.value()).contains("r1");
         });
 
         consumer.close();

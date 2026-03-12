@@ -1,10 +1,9 @@
 package adapter.out;
 
-import car_rental_app.adapter.out.messaging.outbox.MongoOutboxEventStore;
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventDocument;
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventRepository;
-import car_rental_app.domain.model.CarId;
-import car_rental_app.domain.event.CarCreatedEvent;
+import car.rental.app.adapter.out.messaging.outbox.MongoOutboxEventStore;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventDocument;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventRepository;
+import car.rental.app.domain.event.CarCreatedEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -12,7 +11,8 @@ import org.mockito.ArgumentCaptor;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class MongoOutboxEventStoreTest {
     private OutboxEventRepository repository;

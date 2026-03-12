@@ -1,8 +1,8 @@
 package unit;
 
-import domain.events.ApiGatewayEventPublisher;
-import infrastructure.filters.CorrelationIdFilter;
-import infrastructure.filters.LoggingFilter;
+import car.rental.app.domain.events.ApiGatewayEventPublisher;
+import car.rental.app.infrastructure.filters.CorrelationIdFilter;
+import car.rental.app.infrastructure.filters.LoggingFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -12,21 +12,20 @@ import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.mockito.Mockito.*;
 
 
-public class LoggingFilterTest {
+class LoggingFilterTest {
 
     private ApiGatewayEventPublisher eventPublisher;
     private LoggingFilter loggingFilter;
     private GatewayFilterChain filterChain;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         eventPublisher = mock(ApiGatewayEventPublisher.class);
         loggingFilter = new LoggingFilter(eventPublisher);
         filterChain = mock(GatewayFilterChain.class);
@@ -108,7 +107,7 @@ public class LoggingFilterTest {
                 .build();
 
         // osobny WebFilterChain dla CorrelationIdFilter
-        WebFilterChain correlationChain = ex -> Mono.empty();
+       GatewayFilterChain correlationChain = ex -> Mono.empty();
 
         // uruchamiamy CorrelationIdFilter
         new CorrelationIdFilter().filter(exchange, correlationChain).block();

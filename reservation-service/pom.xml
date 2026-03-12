@@ -185,7 +185,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <baseClassForTests>
-                        car_rental_app.reservation.contract.BaseContractTest
+                        contract.reservation.car.rental.app.BaseContractTest
                     </baseClassForTests>
                 </configuration>
             </plugin>

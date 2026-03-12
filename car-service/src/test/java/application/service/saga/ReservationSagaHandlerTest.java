@@ -1,14 +1,14 @@
 package application.service.saga;
 
-import car_rental_app.application.command.MarkCarAsAvailableCommand;
-import car_rental_app.application.command.MarkCarAsUnavailableCommand;
-import car_rental_app.application.service.saga.ReservationSagaHandler;
-import car_rental_app.domain.model.CarId;
-import car_rental_app.application.port.CarCommandPort;
-import car_rental_app.domain.port.OutboxEventStore;
-import car_rental_app.domain.saga.event.PaymentFailedEvent;
-import car_rental_app.domain.saga.event.ReservationCancelledEvent;
-import car_rental_app.domain.saga.event.ReservationCreatedEvent;
+import car.rental.app.application.command.MarkCarAsAvailableCommand;
+import car.rental.app.application.command.MarkCarAsUnavailableCommand;
+import car.rental.app.application.service.saga.ReservationSagaHandler;
+import car.rental.app.domain.model.CarId;
+import car.rental.app.application.port.CarCommandPort;
+import car.rental.app.domain.port.OutboxEventStore;
+import car.rental.app.domain.saga.event.PaymentFailedEvent;
+import car.rental.app.domain.saga.event.ReservationCancelledEvent;
+import car.rental.app.domain.saga.event.ReservationCreatedEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

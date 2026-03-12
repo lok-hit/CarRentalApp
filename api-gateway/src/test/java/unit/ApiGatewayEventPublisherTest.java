@@ -1,7 +1,7 @@
 package unit;
 
-import domain.events.ApiGatewayEventPublisher;
-import domain.events.ApiGatewayRequestEvent;
+import car.rental.app.domain.events.ApiGatewayEventPublisher;
+import car.rental.app.domain.events.ApiGatewayRequestEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -10,13 +10,13 @@ import org.springframework.context.ApplicationEventPublisher;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class ApiGatewayEventPublisherTest {
+class ApiGatewayEventPublisherTest {
 
     private ApplicationEventPublisher eventPublisher;
     private ApiGatewayEventPublisher apiGatewayEventPublisher;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         eventPublisher = mock(ApplicationEventPublisher.class);
         apiGatewayEventPublisher = new ApiGatewayEventPublisher(eventPublisher);
     }
