@@ -83,4 +83,8 @@ public class MetricsService {
                 CURRENCY, payment.amount().currency().getCurrencyCode()
         ).increment();
     }
+
+    public void incrementSagaStep(String step) {
+        registry.counter("saga.step.completed", "step", step).increment();
+    }
 }

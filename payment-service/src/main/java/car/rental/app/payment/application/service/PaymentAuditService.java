@@ -50,4 +50,54 @@ public class PaymentAuditService {
         repository.save(entry);
     }
 
+    public void recordReceived(Object command) {
+        PaymentAuditEntry entry = new PaymentAuditEntry(
+                null,
+                null,
+                null,
+                "saga",
+                command.toString(),
+                null,
+                true,
+                null,
+                Instant.now(),
+                correlationIdService.getOrCreateTraceId(),
+                correlationIdService.getOrCreateCorrelationId()
+        );
+        repository.save(entry);
+    }
+
+    public void recordSuccess(Payment payment) {
+        PaymentAuditEntry entry = new PaymentAuditEntry(
+                payment.id(),
+                payment.reservationId(),
+                payment.customerId(),
+                "saga",
+                "payment_completed",
+                null,
+                true,
+                null,
+                Instant.now(),
+                correlationIdService.getOrCreateTraceId(),
+                correlationIdService.getOrCreateCorrelationId()
+        );
+        repository.save(entry);
+    }
+
+    public void recordRefund(Payment payment) {
+        PaymentAuditEntry entry = new PaymentAuditEntry(
+                payment.id(),
+                payment.reservationId(),
+                payment.customerId(),
+                "saga",
+                "payment_refunded",
+                null,
+                true,
+                null,
+                Instant.now(),
+                correlationIdService.getOrCreateTraceId(),
+                correlationIdService.getOrCreateCorrelationId()
+        );
+        repository.save(entry);
+    }
 }

@@ -1,21 +1,30 @@
 package car.rental.app.payment.application.service;
 
-import org.slf4j.MDC;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
-@Component
+@Service
 public class CorrelationIdService {
 
-    private static final String TRACE_ID = "traceId";
-    private static final String CORRELATION_ID = "correlationId";
+    private static final ThreadLocal<String> correlationIdHolder = new ThreadLocal<>();
+
+    public void bind(String correlationId) {
+        correlationIdHolder.set(correlationId);
+    }
+
+    public String current() {
+        return correlationIdHolder.get();
+    }
+
+    public void clear() {
+        correlationIdHolder.remove();
+    }
 
     public String getOrCreateTraceId() {
-        return MDC.get(TRACE_ID) != null ? MDC.get(TRACE_ID) : UUID.randomUUID().toString();
+        String id = correlationIdHolder.get();
+        return id != null ? id : java.util.UUID.randomUUID().toString();
     }
 
     public String getOrCreateCorrelationId() {
-        return MDC.get(CORRELATION_ID) != null ? MDC.get(CORRELATION_ID) : UUID.randomUUID().toString();
+        return getOrCreateTraceId();
     }
 }

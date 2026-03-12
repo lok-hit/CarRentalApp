@@ -4,18 +4,21 @@ import car.rental.app.payment.application.validation.PaymentValidationRules;
 import car.rental.app.payment.domain.model.Money;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 @Component
 public class PaymentValidator {
 
+    private final PaymentValidationRules rules;
+
+    public PaymentValidator(PaymentValidationRules rules) {
+        this.rules = rules;
+    }
+
     public void validate(String reservationId, String customerId, Money amount) {
 
-        List.of(
-                (Runnable) () -> PaymentValidationRules.reservationIdNotEmpty.validate(reservationId),
-                (Runnable) () -> PaymentValidationRules.customerIdNotEmpty.validate(customerId),
-                (Runnable) () -> PaymentValidationRules.amountNotNull.validate(amount),
-                (Runnable) () -> PaymentValidationRules.amountGreaterThanZero.validate(amount),
-                (Runnable) () -> PaymentValidationRules.currencyValid.validate(amount)
-        ).forEach(Runnable::run);
+        rules.validateReservationId(reservationId);
+        rules.validateCustomerId(customerId);
+        rules.validateAmountNotNull(amount);
+        rules.validateAmountGreaterThanZero(amount);
+        rules.validateCurrency(amount);
     }
 }

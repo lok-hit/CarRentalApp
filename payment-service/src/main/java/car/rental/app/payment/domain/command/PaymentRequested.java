@@ -7,5 +7,6 @@ public record PaymentRequested(
         String reservationId,
         String customerId,
         Money amount,
-        String correlationId
+        String correlationId,
+        String idempotencyKey
 ) {}
