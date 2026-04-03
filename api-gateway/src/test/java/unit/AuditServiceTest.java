@@ -1,7 +1,7 @@
 package unit;
 
-import domain.audit.AuditEvent;
-import domain.audit.service.AuditService;
+import car.rental.app.domain.audit.AuditEvent;
+import car.rental.app.domain.audit.service.AuditService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class AuditServiceTest {
+class AuditServiceTest {
 
     private WebClient monitoringWebClient;
     private RequestBodyUriSpec requestBodyUriSpec;
@@ -28,7 +28,7 @@ public class AuditServiceTest {
     private AuditService auditService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         monitoringWebClient = Mockito.mock(WebClient.class);
         requestBodyUriSpec = Mockito.mock(RequestBodyUriSpec.class);
         requestHeadersSpec = Mockito.mock(RequestHeadersSpec.class);

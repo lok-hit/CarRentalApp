@@ -1,12 +1,12 @@
 package bdd.steps;
 
 
-import car_rental_app.application.command.CreateCarCommand;
-import car_rental_app.application.service.CarApplicationService;
-import car_rental_app.application.service.exception.CarReservationRejectedException;
-import car_rental_app.domain.model.CarCategory;
-import car_rental_app.domain.model.CarId;
-import car_rental_app.domain.model.Price;
+import car.rental.app.application.command.CreateCarCommand;
+import car.rental.app.application.service.CarApplicationService;
+import car.rental.app.application.service.exception.CarReservationRejectedException;
+import car.rental.app.domain.model.CarCategory;
+import car.rental.app.domain.model.CarId;
+import car.rental.app.domain.model.Price;
 import io.cucumber.java.en.*;
 
 import java.math.BigDecimal;
@@ -37,7 +37,6 @@ public class CarReservationSteps {
     @Given("a car with id {string} exists and can be reserved by policy")
     public void carCanBeReserved(String id) {
         policyAllows = true;
-        // ewentualnie: stub/podmiana reservationPolicy w serwisie na taką, która zwraca true
     }
 
     /**

@@ -1,6 +1,6 @@
 package unit;
 
-import bff.rest.FallbackController;
+import car_rental_app.bff.rest.FallbackController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;

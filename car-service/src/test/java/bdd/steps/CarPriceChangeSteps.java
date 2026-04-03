@@ -1,7 +1,7 @@
 package bdd.steps;
 
-import car_rental_app.application.command.ChangeCarPriceCommand;
-import car_rental_app.application.port.CarCommandPort;
+import car.rental.app.application.command.ChangeCarPriceCommand;
+import car.rental.app.application.port.CarCommandPort;
 import io.cucumber.java.en.*;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;

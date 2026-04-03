@@ -1,11 +1,11 @@
 package unit;
 
-import bff.dto.CarDto;
-import bff.dto.DashboardDto;
-import bff.dto.UserProfileDto;
-import bff.service.BffAggregationService;
-import infrastructure.clients.CarsClient;
-import infrastructure.clients.UserClient;
+import car.rental.app.bff.dto.CarDto;
+import car.rental.app.bff.dto.DashboardDto;
+import car.rental.app.bff.dto.UserProfileDto;
+import car.rental.app.bff.service.BffAggregationService;
+import car.rental.app.infrastructure.clients.CarsClient;
+import car.rental.app.infrastructure.clients.UserClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,14 +16,14 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-public class BffAggregationServiceTest {
+class BffAggregationServiceTest {
 
     private CarsClient carsClient;
     private UserClient userClient;
     private BffAggregationService aggregationService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
 
         carsClient = Mockito.mock(CarsClient.class);
         userClient = Mockito.mock(UserClient.class);

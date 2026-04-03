@@ -1,11 +1,10 @@
 package saga;
 
-import car_rental_app.BaseIntegrationTest;
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventRepository;
-import car_rental_app.adapter.out.persistence.repository.CarMongoRepository;
-import car_rental_app.application.service.CarApplicationService;
-import car_rental_app.domain.model.CarId;
-import car_rental_app.domain.saga.event.ReservationCreatedEvent;
+import car.rental.app.CarServiceMain;
+import car.rental.app.BaseIntegrationTest;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventRepository;
+import car.rental.app.domain.model.CarId;
+import car.rental.app.domain.saga.event.ReservationCreatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -19,8 +18,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = car_rental_app.CarServiceMain.class)
-public class SagaListenerIntegrationTest extends BaseIntegrationTest {
+@SpringBootTest(classes = CarServiceMain.class)
+class SagaListenerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     OutboxEventRepository repository;

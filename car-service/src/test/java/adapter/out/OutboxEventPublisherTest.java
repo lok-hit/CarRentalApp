@@ -1,20 +1,19 @@
 package adapter.out;
 
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventDocument;
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventPublisher;
-import car_rental_app.adapter.out.messaging.outbox.OutboxEventRepository;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventDocument;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventPublisher;
+import car.rental.app.adapter.out.messaging.outbox.OutboxEventRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.kafka.core.KafkaTemplate;
 
-import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-public class OutboxEventPublisherTest {
+class OutboxEventPublisherTest {
 
     private OutboxEventRepository repository;
     private KafkaTemplate<String, String> kafka;
@@ -29,7 +28,7 @@ public class OutboxEventPublisherTest {
 
     @Test
     void shouldPublishPendingEventsAndMarkAsProcessed() {
-        OutboxEventDocument pending = new OutboxEventDocument("123", "r1", "ReservationCreatedEvent", "PENDING", Instant.now());
+        OutboxEventDocument pending = new OutboxEventDocument("123", "r1", "ReservationCreatedEvent", "PENDING");
         when(repository.findByStatus("PENDING")).thenReturn(List.of(pending));
         publisher.publishPendingEvents();
         verify(kafka).send("reservation-events", pending.getPayload());

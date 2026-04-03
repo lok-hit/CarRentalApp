@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "PaymentFailedEvent",
+  "namespace": "car_rental_app.payment.avro",
+  "fields": [
+    { "name": "paymentId", "type": "string" },
+    { "name": "reservationId", "type": "string" },
+    { "name": "reason", "type": "string" },
+    { "name": "timestamp", "type": "long" }
+  ]
+}

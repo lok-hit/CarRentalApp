@@ -1,0 +1,22 @@
+{
+  "type": "record",
+  "name": "PaymentCompletedEvent",
+  "namespace": "car_rental_app.payment.avro",
+  "fields": [
+    { "name": "paymentId", "type": "string" },
+    { "name": "reservationId", "type": "string" },
+    { "name": "customerId", "type": "string" },
+    {
+      "name": "amount",
+      "type": {
+        "type": "record",
+        "name": "Money",
+        "fields": [
+          { "name": "amount", "type": "string" },
+          { "name": "currency", "type": "string" }
+        ]
+      }
+    },
+    { "name": "timestamp", "type": "long" }
+  ]
+}
