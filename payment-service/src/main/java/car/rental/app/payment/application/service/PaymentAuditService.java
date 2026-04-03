@@ -100,4 +100,38 @@ public class PaymentAuditService {
         );
         repository.save(entry);
     }
+
+    public void recordFailure(Object command, Exception ex) {
+        PaymentAuditEntry entry = new PaymentAuditEntry(
+                null,
+                null,
+                null,
+                "saga",
+                command.toString(),
+                null,
+                false,
+                ex.getMessage(),
+                Instant.now(),
+                correlationIdService.getOrCreateTraceId(),
+                correlationIdService.getOrCreateCorrelationId()
+        );
+        repository.save(entry);
+    }
+
+    public void recordFailure(Payment payment, Exception ex) {
+        PaymentAuditEntry entry = new PaymentAuditEntry(
+                payment.id(),
+                payment.reservationId(),
+                payment.customerId(),
+                "saga",
+                "payment_failed",
+                null,
+                false,
+                ex.getMessage(),
+                Instant.now(),
+                correlationIdService.getOrCreateTraceId(),
+                correlationIdService.getOrCreateCorrelationId()
+        );
+        repository.save(entry);
+    }
 }
