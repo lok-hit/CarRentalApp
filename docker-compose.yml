@@ -43,6 +43,7 @@ services:
     container_name: monitoring-service
     depends_on:
       - eureka-server
+      - mongodb
       - otel-collector
     ports:
       - "8085:8085"
@@ -50,6 +51,7 @@ services:
       - carrental
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - MONGODB_URI=mongodb://mongodb:27017/monitoring
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
 
   # ============================
@@ -91,13 +93,104 @@ services:
     container_name: user-profile-service
     depends_on:
       - eureka-server
+      - mongodb
+      - keycloak
+    ports:
+      - "8087:8087"
     networks:
       - carrental
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - MONGODB_URI=mongodb://mongodb:27017/user_profiles
+      - KEYCLOAK_ISSUER_URI=http://keycloak:8080/realms/car-rental
 
   notification-service:
     build: ./notification-service
     container_name: notification-service
     depends_on:
       - eureka-server
+    ports:
+      - "8086:8086"
+    networks:
+      - carrental
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+  # ============================
+  # INFRASTRUCTURE
+  # ============================
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - carrental
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - carrental
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: keycloak
+    command: start-dev
+    ports:
+      - "9090:8080"
+    networks:
+      - carrental
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.96.0
+    container_name: otel-collector
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./otel-collector-config.yml:/etc/otelcol-contrib/config.yaml
+    networks:
+      - carrental
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./k8s/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - carrental
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - carrental
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  zipkin:
+    image: openzipkin/zipkin:3.3
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - carrental
+
+networks:
+  carrental:
+    driver: bridge
+
+volumes:
+  mongo_data:
