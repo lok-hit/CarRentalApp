@@ -2,7 +2,7 @@
   "realm": "car-rental",
   "enabled": true,
   "displayName": "Car Rental",
-  "registrationAllowed": false,
+  "registrationAllowed": true,
   "loginWithEmailAllowed": true,
   "duplicateEmailsAllowed": false,
   "accessTokenLifespan": 300,

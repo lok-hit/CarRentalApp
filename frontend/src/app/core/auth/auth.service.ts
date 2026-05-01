@@ -18,6 +18,17 @@ export class AuthService {
     this.keycloak.login();
   }
 
+  register(): void {
+    this.keycloak.register();
+  }
+
+  registerAfterLogout(): void {
+    // Wyloguj z Keycloak, a po wylogowaniu przekieruj z powrotem na stronę główną
+    // Użytkownik kliknie "Zarejestruj" ponownie — tym razem bez aktywnej sesji
+    const registerUrl = `${window.location.origin}/?register=1`;
+    this.keycloak.logout({ redirectUri: registerUrl });
+  }
+
   logout(): void {
     this.keycloak.logout({ redirectUri: window.location.origin });
   }
