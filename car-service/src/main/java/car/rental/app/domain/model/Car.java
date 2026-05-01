@@ -1,7 +1,6 @@
 package car.rental.app.domain.model;
 
 import car.rental.app.domain.event.*;
-import car_rental_app.domain.event.*;
 
 import java.util.ArrayList;
 import java.util.List;

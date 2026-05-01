@@ -1,12 +1,12 @@
-FROM eclipse-temurin:17-alpine-3.23 AS runtime
-
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -Dmaven.test.skip=true
 
-ARG JAR_FILE=target/api-gateway-*.jar
-COPY ${JAR_FILE} app.jar
-
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 ENV JAVA_OPTS="-Xms256m -Xmx512m"
-
 EXPOSE 8080
-
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

@@ -2,11 +2,11 @@ package car.rental.app.bff.dto;
 
 public record CarDto(
         String id,
-        String type,
-        String brand,
-        String model,
-        int year,
-        String registrationNumber,
-        int mileage,
-        boolean available
-) {}
+        String category,
+        double price,
+        String status
+) {
+    public boolean available() {
+        return "AVAILABLE".equals(status);
+    }
+}

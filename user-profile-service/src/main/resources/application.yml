@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: user-profile-service
+  cloud:
+    compatibility-verifier:
+      enabled: false
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/user_profiles}
@@ -14,7 +17,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/car-rental}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:8080/realms/car-rental/protocol/openid-connect/certs}
 
 logging:
   pattern:

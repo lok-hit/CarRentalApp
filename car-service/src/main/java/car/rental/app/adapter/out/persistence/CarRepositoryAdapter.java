@@ -7,6 +7,7 @@ import car.rental.app.domain.model.AvailabilityStatus;
 import car.rental.app.domain.model.Car;
 import car.rental.app.domain.model.CarId;
 import car.rental.app.domain.port.CarRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.MDC;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 @Component
+@ConditionalOnBean(CarJpaRepository.class)
 public class CarRepositoryAdapter implements CarRepository {
     private static final Logger log = Logger.getLogger(CarRepositoryAdapter.class.getName());
     private final CarJpaRepository jpa;

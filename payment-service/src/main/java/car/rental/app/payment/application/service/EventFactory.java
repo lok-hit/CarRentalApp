@@ -16,19 +16,21 @@ import java.util.UUID;
 public class EventFactory {
 
     private final PaymentEventPublisher eventPublisher;
+    private final CorrelationIdService correlationIdService;
 
-    public EventFactory(PaymentEventPublisher eventPublisher) {
+    public EventFactory(PaymentEventPublisher eventPublisher, CorrelationIdService correlationIdService) {
         this.eventPublisher = eventPublisher;
+        this.correlationIdService = correlationIdService;
     }
 
     private EventMetadata metadata(String type, String version) {
         return new EventMetadata(
-                UUID.randomUUID().toString(), // eventId
-                type,                         // eventType
-                version,                      // eventVersion
-                Instant.now(),                // occurredAt
-                null,                         // traceId (podciągniesz jak masz kontekst)
-                null                          // correlationId
+                UUID.randomUUID().toString(),
+                type,
+                version,
+                Instant.now(),
+                correlationIdService.getOrCreateTraceId(),
+                correlationIdService.getOrCreateCorrelationId()
         );
     }
 
@@ -58,45 +60,33 @@ public class EventFactory {
         eventPublisher.publish(event);
     }
 
-    public PaymentCompleted paymentCompleted(Payment payment) {
-        return new PaymentCompleted(
+    public void publishPaymentFailed(Payment payment, String reason) {
+        PaymentFailed event = new PaymentFailed(
                 payment.id(),
                 payment.reservationId(),
-                payment.customerId(),
-                payment.amount(),
-                payment.providerPaymentId(),
-                payment.paidAt(),
-                metadata("PaymentCompleted", "1")
+                reason,
+                metadata("PaymentFailed", "1")
         );
+        eventPublisher.publish(event);
     }
 
-    public PaymentFailed paymentFailed(String paymentId, String reservationId, String reason) {
-        return new PaymentFailed(
-                paymentId,
+    public void publishPaymentFailed(String reservationId, String reason) {
+        PaymentFailed event = new PaymentFailed(
+                null,
                 reservationId,
                 reason,
                 metadata("PaymentFailed", "1")
         );
+        eventPublisher.publish(event);
     }
 
-    public RefundCompleted refundCompleted(Payment payment) {
-        return new RefundCompleted(
-                payment.id(),
-                payment.reservationId(),
-                payment.customerId(),
-                payment.amount(),
-                payment.providerPaymentId(),
-                payment.paidAt(),
-                metadata("RefundCompleted", "1")
-        );
-    }
-
-    public RefundFailed refundFailed(String paymentId, String reservationId, String reason) {
-        return new RefundFailed(
+    public void publishRefundFailed(String paymentId, String reason) {
+        RefundFailed event = new RefundFailed(
                 paymentId,
-                reservationId,
+                null,
                 reason,
                 metadata("RefundFailed", "1")
         );
+        eventPublisher.publish(event);
     }
 }

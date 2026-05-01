@@ -13,8 +13,16 @@ eureka:
 spring:
   application:
     name: api-gateway
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:9090/realms/car-rental/protocol/openid-connect/certs}
   redis:
-    host: redis
+    host: ${REDIS_HOST:localhost}
     port: 6379
   cloud:
     gateway:
@@ -22,26 +30,29 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
-
       default-filters:
-        - RemoveHopByHopHeaders
         - PreserveHostHeader
-
       httpclient:
         connect-timeout: 3000
-        response-timeout: 5s
+        response-timeout: 10s
         pool:
           type: fixed
           max-connections: 200
-          acquire-timeout: 500ms
-
+          acquire-timeout: 500
       routes:
-        # Example: reservations service with circuit breaker + rate limiting
+        - id: cars-service
+          uri: http://car-service:8081
+          predicates:
+            - Path=/api/cars/**
+          filters:
+            - StripPrefix=1
+
         - id: reservations-service
           uri: lb://reservation-service
           predicates:
             - Path=/api/reservations/**
           filters:
+            - StripPrefix=1
             - name: CircuitBreaker
               args:
                 name: reservationsCB
@@ -52,77 +63,32 @@ spring:
                 redis-rate-limiter.burstCapacity: 20
                 key-resolver: "#{@userKeyResolver}"
 
-        # Example: canary deployment for cars-service (v1 vs v2)
-        - id: cars-service-v1
-          uri: lb://cars-service-v1
+        - id: user-profile-service
+          uri: lb://user-profile-service
           predicates:
-            - Path=/api/cars/**
-          filters:
-            - Weight=group-cars, 90
-
-        - id: cars-service-v2
-          uri: lb://cars-service-v2
-          predicates:
-            - Path=/api/cars/**
-          filters:
-            - Weight=group-cars, 10
+            - Path=/users/**
 
 management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, prometheus, loggers
-
+        include: health, info, metrics, prometheus
   endpoint:
     health:
-      probes:
-        enabled: true
       show-details: always
-
-  metrics:
-    enable:
-      jvm: true
-      process: true
-      system: true
-      http: true
-      webclient: true
-      gateway: true
-
-  tracing:
-    enabled: true
-    sampling:
-      probability: 1.0
-
-  otlp:
-    tracing:
-      endpoint: http://otel-collector:4317
-    metrics:
-      export:
-        enabled: true
-        endpoint: http://otel-collector:4317
 
 logging:
   level:
     root: INFO
     org.springframework.cloud.gateway: INFO
-    reactor.netty.http.client: INFO
-    io.micrometer: INFO
-    infrastructure.filters: DEBUG
-
-  pattern:
-    level: "%5p [traceId=%X{traceId:-}] [spanId=%X{spanId:-}] [corrId=%X{correlationId:-}]"
-
-info:
-  app:
-    name: api-gateway
-    version: 1.0.0
-    description: API Gateway for microservices platform
-  build:
-    timestamp: "@timestamp@"
 
 gateway:
   monitoring-service:
     url: http://monitoring-service:8085/audit
+
+monitoring:
+  service:
+    url: ${MONITORING_SERVICE_URL:http://monitoring-service:8085}
 
 resilience4j:
   circuitbreaker:

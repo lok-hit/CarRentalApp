@@ -1,6 +1,5 @@
 package car.rental.app.payment.application.saga;
 
-import car.rental.app.payment.application.dto.PaymentRequestDto;
 import car.rental.app.payment.application.service.*;
 import car.rental.app.payment.domain.command.PaymentRequested;
 import car.rental.app.payment.domain.command.RefundRequested;
@@ -15,25 +14,22 @@ public class SagaCommandHandler {
     private final IdempotencyService idempotency;
     private final CorrelationIdService correlation;
     private final EventFactory eventFactory;
+    private final CommandFactory commandFactory;
+
     private final PaymentAuditService audit;
     private final MetricsService metrics;
+    private final SagaErrorHandler errorHandler;
 
-    public SagaCommandHandler(
-            PaymentApplicationService paymentService,
-            PaymentValidator validator,
-            IdempotencyService idempotency,
-            CorrelationIdService correlation,
-            EventFactory eventFactory,
-            PaymentAuditService audit,
-            MetricsService metrics
-    ) {
+    public SagaCommandHandler(PaymentApplicationService paymentService, PaymentValidator validator, IdempotencyService idempotency, CorrelationIdService correlation, EventFactory eventFactory, CommandFactory commandFactory, PaymentAuditService audit, MetricsService metrics, SagaErrorHandler errorHandler) {
         this.paymentService = paymentService;
         this.validator = validator;
         this.idempotency = idempotency;
         this.correlation = correlation;
         this.eventFactory = eventFactory;
+        this.commandFactory = commandFactory;
         this.audit = audit;
         this.metrics = metrics;
+        this.errorHandler = errorHandler;
     }
 
     public void handle(PaymentRequested command) {
@@ -44,25 +40,28 @@ public class SagaCommandHandler {
             return;
         }
 
-        validator.validate(
-                command.reservationId(),
-                command.customerId(),
-                command.amount()
-        );
+        try {
+            validator.validate(
+                    command.reservationId(),
+                    command.customerId(),
+                    command.amount()
+            );
 
-        audit.recordReceived(command);
+            audit.recordReceived(command);
 
-        Payment payment = paymentService.processPayment(
-                command.reservationId(),
-                command.customerId(),
-                command.amount()
-        );
+            Payment payment = paymentService.processPayment(
+                    command.reservationId(),
+                    command.customerId(),
+                    command.amount()
+            );
 
-        audit.recordSuccess(payment);
+            audit.recordSuccess(payment);
+            metrics.incrementSagaStep("payment_processed");
+            eventFactory.publishPaymentCompleted(payment);
 
-        metrics.incrementSagaStep("payment_processed");
-
-        eventFactory.publishPaymentCompleted(payment);
+        } catch (Exception ex) {
+            errorHandler.handlePaymentRequestedError(command, ex);
+        }
     }
 
     public void handle(RefundRequested command) {
@@ -73,14 +72,17 @@ public class SagaCommandHandler {
             return;
         }
 
-        audit.recordReceived(command);
+        try {
+            audit.recordReceived(command);
 
-        Payment refunded = paymentService.refundPayment(command.paymentId());
+            Payment refunded = paymentService.refundPayment(command.paymentId());
 
-        audit.recordRefund(refunded);
+            audit.recordRefund(refunded);
+            metrics.incrementSagaStep("payment_refunded");
+            eventFactory.publishPaymentRefunded(refunded);
 
-        metrics.incrementSagaStep("payment_refunded");
-
-        eventFactory.publishPaymentRefunded(refunded);
+        } catch (Exception ex) {
+            errorHandler.handleRefundRequestedError(command, ex);
+        }
     }
 }

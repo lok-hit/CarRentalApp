@@ -5,7 +5,6 @@ import car.rental.app.application.command.MarkCarAsUnavailableCommand;
 import car.rental.app.application.port.CarCommandPort;
 import car.rental.app.domain.port.OutboxEventStore;
 import car.rental.app.domain.saga.event.*;
-import car_rental_app.domain.saga.event.*;
 import car.rental.app.exceptions.SagaException;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;

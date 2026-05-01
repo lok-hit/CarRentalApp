@@ -1,113 +1,161 @@
-CarRentalApp – Microservices Platform
-CarRentalApp is a cloud‑native, microservices‑based platform designed for scalable vehicle rental operations. The system follows a modular architecture with independent services communicating through REST, service discovery, and distributed tracing. The platform is optimized for Kubernetes, observability, CI/CD automation, and high availability.
+# CarRentalApp - Microservices Platform
 
-Architecture Overview
-The platform consists of the following core components:
+CarRentalApp is a cloud-native, microservices-based platform designed for scalable vehicle rental operations. The system follows a modular architecture with independent services communicating through REST, Kafka messaging, service discovery, and distributed tracing. The platform is optimized for Kubernetes, observability, CI/CD automation, and high availability.
 
-API Gateway — unified entry point, routing, security, rate limiting, tracing.
+## Architecture Overview
 
-Eureka Server — service discovery and dynamic registry.
+```mermaid
+graph TD
+    Client([Client]) --> GW[API Gateway :8080]
 
-Monitoring Service — audit logging, metrics aggregation, trace correlation.
+    GW --> CS[Car Service :8080]
+    GW --> RS[Reservation Service]
+    GW --> PS[Payment Service :8082]
+    GW --> UPS[User Profile Service :8087]
+    GW --> NS[Notification Service :8086]
+    GW --> MS[Monitoring Service :8085]
 
-Car Service — vehicle catalog, availability, pricing.
+    CS & RS & PS & UPS & NS & MS --> EUR[Eureka Server :8761]
 
-Reservation Service — booking lifecycle, availability checks, cancellations.
+    RS -->|Kafka PaymentRequested| PS
+    PS -->|Kafka PaymentCompleted/Failed| RS
+    RS -->|Outbox Processor| NS
 
-Payment Service — payment processing, refunds, external provider integration.
+    CS --> MongoDB[(MongoDB)]
+    CS --> PG[(PostgreSQL)]
+    PS --> MongoDB
+    UPS --> MongoDB
+    MS --> MongoDB
 
-User Profile Service — user data, preferences, history.
+    GW --> Redis[(Redis rate limiting)]
+    GW --> KC[Keycloak :9090]
 
-Notification Service — email/SMS/push notifications.
+    MS --> OTEL[OpenTelemetry Collector]
+    OTEL --> Prom[Prometheus]
+    Prom --> Grafana[Grafana :3000]
+    OTEL --> Zipkin[Zipkin :9411]
+```
 
-Authorization Service (Keycloak) — identity, roles, tokens, OAuth2/OIDC.
+## Payment Saga Flow
 
-All services are built with Spring Boot 3, Spring Cloud 2023, Java 21, and follow reactive, non‑blocking patterns where applicable.
+```mermaid
+sequenceDiagram
+    participant RS as Reservation Service
+    participant Kafka
+    participant PS as Payment Service
+    participant NS as Notification Service
 
-Key Platform Features
-Service Discovery
+    RS->>Kafka: PaymentRequested (correlationId, idempotencyKey)
+    Kafka->>PS: SagaCommandHandler.handle(PaymentRequested)
+    PS->>PS: idempotency check
+    PS->>PS: validate + processPayment()
+    PS->>PS: audit.recordSuccess()
+
+    alt Payment OK
+        PS->>Kafka: PaymentCompleted
+        Kafka->>RS: mark reservation CONFIRMED
+        RS->>NS: NotificationOutboxProcessor -> reservation-confirmed
+    else Payment Failed
+        PS->>Kafka: PaymentFailed
+        Kafka->>RS: mark reservation CANCELLED
+        RS->>NS: NotificationOutboxProcessor -> reservation-cancelled
+    end
+```
+
+## Key Platform Features
+
+### Service Discovery
 Eureka Server provides dynamic registration and lookup for all microservices.
 
-API Gateway
-Handles routing, authentication, rate limiting, circuit breakers, canary deployments, and distributed tracing.
+### API Gateway
+Handles routing, authentication, Redis rate limiting, Resilience4j circuit breakers, canary deployments, and distributed tracing.
 
-Observability
-OpenTelemetry tracing (OTLP)
+### Observability
+- OpenTelemetry tracing (OTLP)
+- Micrometer metrics
+- Prometheus scraping
+- Grafana dashboards
+- Structured logging with correlation IDs
 
-Micrometer metrics
+### Resilience
+- Resilience4j circuit breakers
+- Redis rate limiting
+- Canary routing for progressive deployments
 
-Prometheus scraping
+### Security
+- Keycloak for identity and access management
+- JWT validation at the gateway
+- Role-based access control
 
-Grafana dashboards
+### CI/CD
+- GitHub Actions CI for every service (build, test, Docker image)
+- Jenkins pipeline for container builds and deployments
+- Docker multi-stage images for all services
 
-Structured logging with correlation IDs
+## Project Structure
 
-Resilience
-Resilience4j circuit breakers
-
-Redis rate limiting
-
-Canary routing for progressive deployments
-
-Security
-Keycloak for identity and access management
-
-JWT validation at the gateway
-
-Role‑based access control
-
-CI/CD
-GitHub Actions for continuous integration
-
-Jenkins pipeline for container builds and deployments
-
-Docker images for all services
-
-Project Structure
-Kod
+```
 CarRentalApp/
-│
-├── api-gateway/
-├── eureka-server/
-├── monitoring-service/
-├── car-service/
-├── reservation-service/
-├── payment-service/
-├── user-profile-service/
-├── notification-service/
-└── pom.xml  (parent)
-Technology Stack
-Java 17
+|
++-- api-gateway/          # Spring Cloud Gateway, Redis, Resilience4j
++-- eureka-server/        # Service discovery
++-- car-service/          # Hexagonal arch, CQRS, Outbox, dual persistence (JPA+MongoDB)
++-- reservation-service/  # Saga orchestration, BDD Cucumber, NotificationOutbox
++-- payment-service/      # Stripe, idempotency, audit, Saga
++-- user-profile-service/ # OAuth2/Keycloak, MongoDB
++-- notification-service/ # Email/SMS/push notifications
++-- monitoring-service/   # WebFlux, reactive MongoDB, audit events
++-- k8s/                  # Kubernetes manifests
++-- charts/               # Helm chart
++-- docker-compose.yml
++-- Makefile
+\-- pom.xml               # Parent POM
+```
 
-Spring Boot 3
+## Technology Stack
 
-Spring Cloud 2023
+| Layer | Technology |
+|---|---|
+| Language | Java 21 |
+| Framework | Spring Boot 3, Spring Cloud 2023 |
+| API | Spring Cloud Gateway, Spring MVC, Spring WebFlux |
+| Messaging | Apache Kafka |
+| Persistence | Spring Data JPA, Spring Data MongoDB |
+| Security | Keycloak, OAuth2, JWT |
+| Service Discovery | Eureka Server |
+| Resilience | Resilience4j |
+| Caching / Rate Limiting | Redis |
+| Observability | OpenTelemetry, Micrometer, Prometheus, Grafana, Zipkin |
+| Testing | JUnit 5, Mockito, Testcontainers, Cucumber (BDD) |
+| Containerisation | Docker, Docker Compose |
+| Orchestration | Kubernetes, Helm |
+| CI/CD | GitHub Actions, Jenkins |
 
-Spring Cloud Gateway
+## Build & Run
 
-Eureka Server
-
-Resilience4j
-
-Redis
-
-OpenTelemetry
-
-Prometheus / Grafana
-
-Docker
-
-Jenkins
-
-GitHub Actions
-
-Keycloak
-
-Build & Run
 Build all modules:
-Kod
+```bash
 mvn clean install
-Run locally (example):
-Kod
-cd eureka-server
-mvn spring-boot:run
+```
+
+Start the full platform locally (Docker Compose):
+```bash
+make up
+```
+
+Run a single service with the OpenTelemetry agent:
+```bash
+make run SERVICE=car-service
+```
+
+## API Documentation
+
+Each service exposes Swagger UI at `/swagger-ui.html`:
+
+| Service | URL |
+|---|---|
+| Car Service | http://localhost:8080/swagger-ui.html |
+| Payment Service | http://localhost:8082/swagger-ui.html |
+| User Profile Service | http://localhost:8087/swagger-ui.html |
+| Notification Service | http://localhost:8086/swagger-ui.html |
+| Monitoring Service | http://localhost:8085/swagger-ui.html |
