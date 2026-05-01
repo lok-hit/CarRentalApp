@@ -17,10 +17,10 @@ public class BffAggregationService {
         this.usersClient = usersClient;
     }
 
-    public Mono<DashboardDto> getDashboard() {
+    public Mono<DashboardDto> getDashboard(String bearerToken) {
         return Mono.zip(
-                carsClient.getAvailableCars(),
-                usersClient.getUserProfile()
+                carsClient.getAvailableCars(bearerToken),
+                usersClient.getUserProfile(bearerToken)
         ).map(tuple -> new DashboardDto(tuple.getT1(), tuple.getT2()));
     }
 }

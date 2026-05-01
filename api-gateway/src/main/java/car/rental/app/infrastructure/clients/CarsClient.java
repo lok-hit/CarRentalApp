@@ -10,18 +10,19 @@ import java.util.List;
 @Component
 public class CarsClient {
 
-    private WebClient webClient;
+    private final WebClient webClient;
 
-    public CarsClient(WebClient.Builder builder){
-        this.webClient = builder.baseUrl("http://cars-service").build();
+    public CarsClient(WebClient.Builder builder) {
+        this.webClient = builder.baseUrl("http://car-service").build();
     }
 
-    public Mono<List<CarDto>> getAvailableCars() {
-
+    public Mono<List<CarDto>> getAvailableCars(String bearerToken) {
         return webClient.get()
-                .uri("/cars/available")
+                .uri("/cars")
+                .header("Authorization", bearerToken)
                 .retrieve()
                 .bodyToFlux(CarDto.class)
-                .collectList();
+                .collectList()
+                .onErrorReturn(List.of());
     }
 }

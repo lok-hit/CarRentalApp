@@ -1,0 +1,19 @@
+.sidenav-container {
+  height: 100%;
+  margin-top: 64px;
+}
+
+.sidenav {
+  width: 240px;
+  padding-top: 8px;
+}
+
+.content {
+  min-height: calc(100vh - 64px);
+}
+
+.active-item {
+  background: var(--mat-sys-secondary-container);
+  border-radius: 0 24px 24px 0;
+  margin-right: 12px;
+}

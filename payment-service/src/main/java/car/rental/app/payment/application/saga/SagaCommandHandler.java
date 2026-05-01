@@ -20,6 +20,18 @@ public class SagaCommandHandler {
     private final MetricsService metrics;
     private final SagaErrorHandler errorHandler;
 
+    public SagaCommandHandler(PaymentApplicationService paymentService, PaymentValidator validator, IdempotencyService idempotency, CorrelationIdService correlation, EventFactory eventFactory, CommandFactory commandFactory, PaymentAuditService audit, MetricsService metrics, SagaErrorHandler errorHandler) {
+        this.paymentService = paymentService;
+        this.validator = validator;
+        this.idempotency = idempotency;
+        this.correlation = correlation;
+        this.eventFactory = eventFactory;
+        this.commandFactory = commandFactory;
+        this.audit = audit;
+        this.metrics = metrics;
+        this.errorHandler = errorHandler;
+    }
+
     public void handle(PaymentRequested command) {
 
         correlation.bind(command.correlationId());

@@ -7,7 +7,6 @@ import car.rental.app.domain.model.Car;
 import car.rental.app.domain.model.CarCategory;
 import car.rental.app.domain.model.CarId;
 import car.rental.app.domain.model.Price;
-import car_rental_app.domain.model.*;
 
 public class CarMapper {
 

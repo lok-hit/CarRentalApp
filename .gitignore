@@ -91,3 +91,8 @@ coverage/
 
 ### Docker ###
 docker-data/
+
+### Angular / Node.js ###
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/

@@ -1,6 +1,7 @@
 package car.rental.app.adapter.in.rest;
 
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,15 +15,12 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 @Configuration
 public class SecurityConfig {
 
-    /**
-     * Provides a JwtDecoder bean configured to use the local JWKS endpoint for testing.
-     *
-     * @return a JwtDecoder that decodes JWTs using the JWKS at http://localhost:8080/.well-known/jwks.json
-     */
+    @Value("${keycloak.jwk-set-uri}")
+    private String jwkSetUri;
+
     @Bean
     public JwtDecoder jwtDecoder() {
-        // For testing purposes - create a mock JWT decoder
-        return NimbusJwtDecoder.withJwkSetUri("http://localhost:8080/.well-known/jwks.json").build();
+        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
     }
 
     /**

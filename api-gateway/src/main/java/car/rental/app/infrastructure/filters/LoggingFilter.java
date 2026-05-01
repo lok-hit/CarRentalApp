@@ -37,8 +37,12 @@ public class LoggingFilter implements GlobalFilter {
                 method, path, correlationId);
 
         return exchange.getPrincipal()
-                .cast(JwtAuthenticationToken.class)
-                .map(jwt -> jwt.getToken().getSubject()) // userId = sub
+                .flatMap(p -> {
+                    if (p instanceof JwtAuthenticationToken jwt) {
+                        return Mono.just(jwt.getToken().getSubject());
+                    }
+                    return Mono.just("anonymous");
+                })
                 .defaultIfEmpty("anonymous")
                 .doOnNext(userId -> {
                     // Publikacja eventu CloudEvent
